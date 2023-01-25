@@ -22,3 +22,12 @@ std::shared_ptr<char> OcrTesseract::Image(std::string const& path) {
     pixDestroy(&image);
     return std::shared_ptr<char>(outText, std::default_delete<char[]>());
 }
+std::shared_ptr<char> OcrTesseract::ImageFromMem(const l_uint8* data, size_t len) {
+    auto image = pixReadMemPnm(data, len);
+
+    api_->SetImage(image);
+    auto outText = api_->GetUTF8Text();
+
+    pixDestroy(&image);
+    return std::shared_ptr<char>(outText, std::default_delete<char[]>());
+}

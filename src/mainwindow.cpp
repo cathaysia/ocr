@@ -3,8 +3,11 @@
 
 #include "ocr_tesseract.h"
 
+#include <iostream>
+
 #include <QFileDialog>
 #include <QLabel>
+#include <QTemporaryFile>
 
 #include "screen_capture.h"
 MainWindow::MainWindow(QWidget* parent)
@@ -22,6 +25,17 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
         ui->lbl_img->setPixmap(pix);
+
+        QTemporaryFile tmpfile("XXXXXX.png");
+        if(!tmpfile.open()) {
+            return;
+        }
+
+        pix.save(&tmpfile);
+        tmpfile.close();
+
+        auto res = tesseract_->Image(tmpfile.fileName().toStdString());
+        ui->browser_txt->setPlainText({ res.get() });
     });
 }
 

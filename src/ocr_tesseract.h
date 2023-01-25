@@ -13,6 +13,7 @@ public:
     ~OcrTesseract();
 
     std::shared_ptr<char> Image(std::string const& path);
+    std::shared_ptr<char> ImageFromMem(const l_uint8* data, size_t len);
 
 private:
     tesseract::TessBaseAPI* api_;

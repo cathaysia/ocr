@@ -6,19 +6,33 @@
 #include <QFileDialog>
 #include <QLabel>
 
+#include "screen_capture.h"
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), tesseract_(new OcrTesseract("chi_sim+eng")) {
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , capture_(new ScreenCapture(nullptr))
+    , tesseract_(new OcrTesseract("chi_sim+eng")) {
     ui->setupUi(this);
 
     ui->lbl_img->installEventFilter(this);
+
+    connect(ui->btn_capture, &QPushButton::clicked, [this]() {
+        capture_->capture();
+    });
+
+    connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
+        ui->lbl_img->setPixmap(pix);
+    });
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+    delete capture_;
     delete tesseract_;
 
     ui         = nullptr;
     tesseract_ = nullptr;
+    capture_   = nullptr;
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* e) {

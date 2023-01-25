@@ -9,6 +9,8 @@ add_executable(
   mainwindow.ui
   ocr_tesseract.cpp
   ocr_tesseract.h
+  screen_capture.h
+  screen_capture.cpp
 )
 
 find_package(Tesseract REQUIRED)

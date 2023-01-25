@@ -7,6 +7,7 @@ class MainWindow;
 };
 
 class OcrTesseract;
+class ScreenCapture;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT;
@@ -19,5 +20,6 @@ public:
 
 private:
     Ui::MainWindow* ui;
+    ScreenCapture*  capture_;
     OcrTesseract*   tesseract_;
 };

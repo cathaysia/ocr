@@ -1,0 +1,8 @@
+compile_commands.json
+/build/
+/out/
+/.vs/
+/.vscode/
+/.cache/
+CMakeLists.txt.user
+*.db

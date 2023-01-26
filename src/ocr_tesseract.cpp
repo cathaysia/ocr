@@ -1,5 +1,8 @@
 #include "ocr_tesseract.h"
 
+#include <leptonica/allheaders.h>
+#include <tesseract/baseapi.h>
+
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 
@@ -7,6 +10,8 @@ OcrTesseract::OcrTesseract() : api_(new tesseract::TessBaseAPI) {
     LoadLangs({ "chi_sim", "eng" });
 
     api_->SetPageSegMode(tesseract::PSM_AUTO_OSD);
+
+    api_->GetInitLanguagesAsString();
 }
 
 OcrTesseract::~OcrTesseract() {
@@ -53,4 +58,19 @@ void OcrTesseract::LoadLangs(std::vector<std::string> const& langs) {
     }
 
     spdlog::info("设置 tesseract 识别的语言为：{}", langs);
+}
+std::vector<std::string> OcrTesseract::GetUsedLangs() {
+    std::vector<std::string> res;
+    std::string              source { api_->GetInitLanguagesAsString() };
+
+    auto ps    = source.find('+');
+    int  start = 0;
+    while(ps != std::string::npos) {
+        res.push_back(source.substr(start, ps));
+        start = ps + 1;
+        ps    = source.find('+', start);
+    }
+    res.push_back(source.substr(start));
+
+    return res;
 }

@@ -34,11 +34,18 @@ MainWindow::MainWindow(QWidget* parent)
         spdlog::error("快捷键注册失败");
     }
 
+    auto                        usedLangs = tesseract_->GetUsedLangs();
+    std::map<std::string, bool> usedLangsMap;
     // langs 按钮
     // TODO: 可以指定语言顺序
     {
         auto   langs = tesseract_->GetAvailableLangs();
         QMenu* menu  = new QMenu;
+
+        for(auto const& l: usedLangs) {
+            usedLangsMap[l] = true;
+        }
+
         for(auto const& lang: langs) {
             auto act = menu->addAction(lang.c_str(), [this, menu]() {
                 auto                     acts = menu->actions();
@@ -49,12 +56,13 @@ MainWindow::MainWindow(QWidget* parent)
                 }
                 tesseract_->LoadLangs(activateLangs);
 
-                ui->btn_lang->setText(fmt::format("选择语言模型({})", fmt::join(activateLangs, ", ")).c_str());
+                ui->btn_lang->setText(
+                    fmt::format("选择语言模型({})", fmt::join(tesseract_->GetUsedLangs(), ", ")).c_str());
             });
             act->setCheckable(true);
             menu->addAction(act);
 
-            if(lang == "eng" || lang == "chi_sim" || lang == "osd") {
+            if(usedLangsMap.count(lang)) {
                 act->setChecked(true);
             }
         }
@@ -89,7 +97,7 @@ MainWindow::MainWindow(QWidget* parent)
 
         ui->browser_txt->setPlainText({ res.get() });
     });
-    ui->btn_lang->setText("选择语言模型(eng, chi_sim, osd)");
+    ui->btn_lang->setText(fmt::format("选择语言模型({})", fmt::join(usedLangs, ", ")).c_str());
 }
 
 MainWindow::~MainWindow() {

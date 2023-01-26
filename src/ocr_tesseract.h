@@ -1,11 +1,13 @@
 #pragma once
 
-#include <leptonica/allheaders.h>
-#include <tesseract/baseapi.h>
-
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+namespace tesseract {
+class TessBaseAPI;
+}
 
 class OcrTesseract {
 public:
@@ -16,6 +18,7 @@ public:
     std::shared_ptr<char> ImageFromMem(const void* data, size_t len);
 
     std::vector<std::string> GetAvailableLangs();
+    std::vector<std::string> GetUsedLangs();
 
     void LoadLangs(std::vector<std::string> const& langs);
 

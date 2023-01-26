@@ -7,3 +7,6 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = https://github.com/google/googletest
+[submodule "extern/QHotkey"]
+	path = extern/QHotkey
+	url = https://github.com/Skycoder42/QHotkey

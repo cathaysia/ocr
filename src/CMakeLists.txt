@@ -9,11 +9,18 @@ add_executable(
   mainwindow.ui
   ocr_tesseract.cpp
   ocr_tesseract.h
-  screen_capture.h
   screen_capture.cpp
+  screen_capture.h
 )
 
 find_package(Tesseract REQUIRED)
 find_package(Qt5 COMPONENTS Widgets)
 
-target_link_libraries(dragon_screen PRIVATE fmt::fmt spdlog::spdlog Tesseract::libtesseract Qt5::Widgets)
+target_link_libraries(
+  dragon_screen
+  PRIVATE fmt::fmt
+          spdlog::spdlog
+          Tesseract::libtesseract
+          Qt5::Widgets
+          QHotkey::QHotkey
+)

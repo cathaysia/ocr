@@ -9,12 +9,16 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <spdlog/spdlog.h>
 
 #include <QAction>
 #include <QFileDialog>
+#include <QKeySequence>
 #include <QLabel>
 #include <QMenu>
 #include <QTemporaryFile>
+
+#include <QHotkey>
 
 #include "screen_capture.h"
 
@@ -23,8 +27,12 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , capture_(new ScreenCapture(nullptr))
-    , tesseract_(new OcrTesseract()) {
+    , tesseract_(new OcrTesseract())
+    , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp)) {
     ui->setupUi(this);
+    if(!hotkey_->isRegistered()) {
+        spdlog::error("快捷键注册失败");
+    }
 
     // langs 按钮
     // TODO: 可以指定语言顺序
@@ -55,7 +63,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->lbl_img->installEventFilter(this);
 
-    connect(ui->btn_capture, &QPushButton::clicked, [this]() {
+    auto cap = [this]() {
         // FIXME: 选中后，主窗口会闪烁
         if(ui->cbox_hidden->isChecked()) {
             showMinimized();
@@ -66,7 +74,10 @@ MainWindow::MainWindow(QWidget* parent)
         } else {
             capture_->capture();
         }
-    });
+    };
+
+    connect(ui->btn_capture, &QPushButton::clicked, cap);
+    connect(hotkey_, &QHotkey::activated, cap);
 
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
         ui->lbl_img->setPixmap(pix);

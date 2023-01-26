@@ -1,3 +1,6 @@
+set(QHOTKEY_INSTALL OFF CACHE BOOL "启用安装规则")
+add_subdirectory(QHotkey)
+
 add_subdirectory(fmt)
 
 set(SPDLOG_ENABLE_PCH ON CACHE BOOL "启用预编译头")

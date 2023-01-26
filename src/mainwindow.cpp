@@ -12,11 +12,11 @@
 #include <spdlog/spdlog.h>
 
 #include <QAction>
+#include <QBuffer>
 #include <QFileDialog>
 #include <QKeySequence>
 #include <QLabel>
 #include <QMenu>
-#include <QTemporaryFile>
 
 #include <QHotkey>
 
@@ -82,15 +82,11 @@ MainWindow::MainWindow(QWidget* parent)
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
         ui->lbl_img->setPixmap(pix);
 
-        QTemporaryFile tmpfile("XXXXXX.png");
-        if(!tmpfile.open()) {
-            return;
-        }
+        QBuffer buffer;
+        buffer.open(QIODevice::ReadWrite);
+        pix.save(&buffer, "PNG");
+        auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
-        pix.save(&tmpfile);
-        tmpfile.close();
-
-        auto res = tesseract_->Image(tmpfile.fileName().toStdString());
         ui->browser_txt->setPlainText({ res.get() });
     });
     ui->btn_lang->setText("选择语言模型(eng, chi_sim, osd)");

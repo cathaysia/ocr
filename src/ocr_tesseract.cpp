@@ -15,6 +15,7 @@ OcrTesseract::~OcrTesseract() {
     api_ = nullptr;
 }
 
+// FIXME: 中文识别时出现的空格
 std::shared_ptr<char> OcrTesseract::Image(std::string const& path) {
     Pix* image = pixRead(path.c_str());
 

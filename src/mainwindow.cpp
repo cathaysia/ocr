@@ -17,6 +17,8 @@
 #include <QTemporaryFile>
 
 #include "screen_capture.h"
+
+// TODO: 绑定到快捷键
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -53,6 +55,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->lbl_img->installEventFilter(this);
 
     connect(ui->btn_capture, &QPushButton::clicked, [this]() {
+        // FIXME: 选中后，主窗口会闪烁
         if(ui->cbox_hidden->isChecked()) {
             showMinimized();
             std::this_thread::sleep_for(std::chrono::milliseconds(500));

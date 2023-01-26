@@ -3,7 +3,9 @@
 
 #include "ocr_tesseract.h"
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include <QAction>
 #include <QFileDialog>
@@ -46,7 +48,15 @@ MainWindow::MainWindow(QWidget* parent)
     ui->lbl_img->installEventFilter(this);
 
     connect(ui->btn_capture, &QPushButton::clicked, [this]() {
-        capture_->capture();
+        if(ui->cbox_hidden->isChecked()) {
+            showMinimized();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            capture_->capture();
+            showNormal();
+            activateWindow();
+        } else {
+            capture_->capture();
+        }
     });
 
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {

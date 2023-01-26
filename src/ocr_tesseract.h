@@ -9,11 +9,15 @@
 
 class OcrTesseract {
 public:
-    OcrTesseract(std::string const& engine);
+    OcrTesseract();
     ~OcrTesseract();
 
     std::shared_ptr<char> Image(std::string const& path);
     std::shared_ptr<char> ImageFromMem(const l_uint8* data, size_t len);
+
+    std::vector<std::string> GetAvailableLangs();
+
+    void LoadLangs(std::vector<std::string> const& langs);
 
 private:
     tesseract::TessBaseAPI* api_;

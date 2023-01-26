@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QPushButton" name="btn_capture">
       <property name="text">
@@ -32,7 +32,20 @@
         <string>点击选择图片</string>
        </property>
       </widget>
-      <widget class="QTextBrowser" name="browser_txt"/>
+      <widget class="QWidget" name="">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="btn_lang">
+          <property name="text">
+           <string>选择语言模型</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="browser_txt"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>

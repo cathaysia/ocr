@@ -5,8 +5,10 @@
 
 #include <iostream>
 
+#include <QAction>
 #include <QFileDialog>
 #include <QLabel>
+#include <QMenu>
 #include <QTemporaryFile>
 
 #include "screen_capture.h"
@@ -14,8 +16,32 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , capture_(new ScreenCapture(nullptr))
-    , tesseract_(new OcrTesseract("chi_sim+eng")) {
+    , tesseract_(new OcrTesseract()) {
     ui->setupUi(this);
+
+    // langs 按钮
+    {
+        auto   langs = tesseract_->GetAvailableLangs();
+        QMenu* menu  = new QMenu;
+        for(auto const& lang: langs) {
+            auto act = menu->addAction(lang.c_str(), [this, menu]() {
+                auto                     acts = menu->actions();
+                std::vector<std::string> activateLangs;
+                for(auto const& act: acts) {
+                    if(!act->isChecked()) continue;
+                    activateLangs.push_back(act->text().toStdString());
+                }
+                tesseract_->LoadLangs(activateLangs);
+            });
+            act->setCheckable(true);
+            menu->addAction(act);
+
+            if(lang == "eng" || lang == "chi_sim" || lang == "osd") {
+                act->setChecked(true);
+            }
+        }
+        ui->btn_lang->setMenu(menu);
+    }
 
     ui->lbl_img->installEventFilter(this);
 

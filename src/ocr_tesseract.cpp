@@ -1,12 +1,10 @@
 #include "ocr_tesseract.h"
 
+#include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 
-OcrTesseract::OcrTesseract(std::string const& engine) : api_(new tesseract::TessBaseAPI) {
-    auto ret = api_->Init(nullptr, engine.c_str());
-    if(ret) {
-        throw std::runtime_error("tesseract 初始化失败");
-    }
+OcrTesseract::OcrTesseract() : api_(new tesseract::TessBaseAPI) {
+    LoadLangs({ "eng", "chi_sim" });
 
     api_->SetPageSegMode(tesseract::PSM_AUTO_OSD);
 }
@@ -39,4 +37,19 @@ std::shared_ptr<char> OcrTesseract::ImageFromMem(const l_uint8* data, size_t len
 
     pixDestroy(&image);
     return std::shared_ptr<char>(outText, std::default_delete<char[]>());
+}
+std::vector<std::string> OcrTesseract::GetAvailableLangs() {
+    std::vector<std::string> langs;
+    api_->GetAvailableLanguagesAsVector(&langs);
+    return langs;
+}
+
+void OcrTesseract::LoadLangs(std::vector<std::string> const& langs) {
+    auto lan = fmt::format("{}", fmt::join(langs, "+"));
+    auto ret = api_->Init(nullptr, lan.c_str());
+    if(ret) {
+        throw std::runtime_error("tesseract 初始化失败");
+    }
+
+    spdlog::info("设置 tesseract 识别的语言为：{}", langs);
 }

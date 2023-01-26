@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
 
     // langs 按钮
+    // TODO: 可以指定语言顺序
     {
         auto   langs = tesseract_->GetAvailableLangs();
         QMenu* menu  = new QMenu;

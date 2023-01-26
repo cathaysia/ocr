@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 OcrTesseract::OcrTesseract() : api_(new tesseract::TessBaseAPI) {
-    LoadLangs({ "eng", "chi_sim" });
+    LoadLangs({ "chi_sim", "eng" });
 
     api_->SetPageSegMode(tesseract::PSM_AUTO_OSD);
 }

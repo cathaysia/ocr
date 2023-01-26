@@ -1,10 +1,14 @@
 #include "ocr_tesseract.h"
 
+#include <spdlog/spdlog.h>
+
 OcrTesseract::OcrTesseract(std::string const& engine) : api_(new tesseract::TessBaseAPI) {
     auto ret = api_->Init(nullptr, engine.c_str());
     if(ret) {
         throw std::runtime_error("tesseract 初始化失败");
     }
+
+    api_->SetPageSegMode(tesseract::PSM_AUTO_OSD);
 }
 
 OcrTesseract::~OcrTesseract() {
@@ -17,6 +21,11 @@ std::shared_ptr<char> OcrTesseract::Image(std::string const& path) {
     Pix* image = pixRead(path.c_str());
 
     api_->SetImage(image);
+    auto ret = api_->Recognize(0);
+    if(ret) {
+        spdlog::error("tesseract 设置 Recognize 失败");
+    }
+
     auto outText = api_->GetUTF8Text();
 
     pixDestroy(&image);

@@ -7,6 +7,9 @@
 #include <iostream>
 #include <thread>
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+
 #include <QAction>
 #include <QFileDialog>
 #include <QLabel>
@@ -34,6 +37,8 @@ MainWindow::MainWindow(QWidget* parent)
                     activateLangs.push_back(act->text().toStdString());
                 }
                 tesseract_->LoadLangs(activateLangs);
+
+                ui->btn_lang->setText(fmt::format("选择语言模型({})", fmt::join(activateLangs, ", ")).c_str());
             });
             act->setCheckable(true);
             menu->addAction(act);
@@ -73,6 +78,7 @@ MainWindow::MainWindow(QWidget* parent)
         auto res = tesseract_->Image(tmpfile.fileName().toStdString());
         ui->browser_txt->setPlainText({ res.get() });
     });
+    ui->btn_lang->setText("选择语言模型(eng, chi_sim, osd)");
 }
 
 MainWindow::~MainWindow() {

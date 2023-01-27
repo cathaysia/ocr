@@ -3,6 +3,8 @@ set(CMAKE_AUTOUIC ON)
 
 add_executable(
   dragon_screen
+  code_highlight.cpp
+  code_highlight.h
   main.cpp
   mainwindow.cpp
   mainwindow.h
@@ -14,7 +16,14 @@ add_executable(
 )
 
 find_package(Tesseract REQUIRED)
-find_package(Qt5 COMPONENTS Widgets)
+find_package(
+  Qt5
+  COMPONENTS Widgets
+  REQUIRED
+)
+find_package(pybind11 REQUIRED)
+
+target_include_directories(dragon_screen PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/autogen")
 
 target_link_libraries(
   dragon_screen
@@ -23,4 +32,5 @@ target_link_libraries(
           Tesseract::libtesseract
           Qt5::Widgets
           QHotkey::QHotkey
+          pybind11::embed
 )

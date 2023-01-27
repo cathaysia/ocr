@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "code_highlight.h"
 #include "ocr_tesseract.h"
 
 #include <chrono>
@@ -95,7 +96,9 @@ MainWindow::MainWindow(QWidget* parent)
         pix.save(&buffer, "PNG");
         auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
-        ui->browser_txt->setPlainText({ res.get() });
+        CodeHighLightCode hig;
+
+        ui->browser_txt->setHtml(hig.ShaderCode(res.get()).c_str());
     });
     ui->btn_lang->setText(fmt::format("选择语言模型({})", fmt::join(usedLangs, ", ")).c_str());
 }

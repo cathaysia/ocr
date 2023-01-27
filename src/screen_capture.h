@@ -1,11 +1,9 @@
 #pragma once
 
-#include <QGuiApplication>
-#include <QMouseEvent>
-#include <QPainter>
 #include <QPixmap>
-#include <QScreen>
 #include <QWidget>
+
+class QMouseEvent;
 
 class ScreenCapture : public QWidget {
     Q_OBJECT;

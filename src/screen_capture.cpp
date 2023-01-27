@@ -1,5 +1,10 @@
 #include "screen_capture.h"
 
+#include <QGuiApplication>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QScreen>
+
 ScreenCapture::ScreenCapture(QWidget* parent) : QWidget(parent) {
     setMouseTracking(true);
     hide();

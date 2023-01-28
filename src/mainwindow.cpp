@@ -12,18 +12,17 @@
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 
-#include <QAction>
 #include <QBuffer>
+#include <QCompleter>
 #include <QFileDialog>
 #include <QKeySequence>
 #include <QLabel>
-#include <QMenu>
+#include <QLineEdit>
 
 #include <QHotkey>
 
 #include "screen_capture.h"
 
-// TODO: 绑定到快捷键
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -37,38 +36,46 @@ MainWindow::MainWindow(QWidget* parent)
 
     auto                        usedLangs = tesseract_->GetUsedLangs();
     std::map<std::string, bool> usedLangsMap;
-    // langs 按钮
-    // TODO: 可以指定语言顺序
     {
-        auto   langs = tesseract_->GetAvailableLangs();
-        QMenu* menu  = new QMenu;
+        auto langs     = tesseract_->GetAvailableLangs();
+        auto usedLangs = tesseract_->GetUsedLangs();
 
-        for(auto const& l: usedLangs) {
-            usedLangsMap[l] = true;
+        QStringList qlangs;
+        for(auto const& s: langs) {
+            qlangs << s.c_str();
         }
 
-        for(auto const& lang: langs) {
-            auto act = menu->addAction(lang.c_str(), [this, menu]() {
-                auto                     acts = menu->actions();
-                std::vector<std::string> activateLangs;
-                for(auto const& act: acts) {
-                    if(!act->isChecked()) continue;
-                    activateLangs.push_back(act->text().toStdString());
-                }
-                tesseract_->LoadLangs(activateLangs);
+        ui->line_lang->setText(fmt::format("{}", fmt::join(usedLangs, ", ")).c_str());
 
-                ui->btn_lang->setText(
-                    fmt::format("选择语言模型({})", fmt::join(tesseract_->GetUsedLangs(), ", ")).c_str());
-            });
-            act->setCheckable(true);
-            menu->addAction(act);
-
-            if(usedLangsMap.count(lang)) {
-                act->setChecked(true);
-            }
-        }
-        ui->btn_lang->setMenu(menu);
+        auto comp = new QCompleter(qlangs, this);
+        comp->setCompletionMode(QCompleter::PopupCompletion);
+        comp->setCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
+        // FIXME: 现在只能行补全
+        ui->line_lang->setCompleter(comp);
     }
+
+    connect(ui->line_lang, &QLineEdit::textChanged, [this](QString const& text) {
+        auto langs = tesseract_->GetAvailableLangs();
+        auto res   = std::vector<std::string>();
+
+        for(auto& v: text.split(",")) {
+            v = v.trimmed();
+            if(v.isEmpty()) continue;
+            qDebug() << v;
+            if(std::find(langs.begin(), langs.end(), v.toStdString()) == langs.end()) {
+                spdlog::info("{} 不在支持的语言列表中，忽略", v.toStdString());
+                ui->line_lang->setStyleSheet("color: red;");
+                return;
+            }
+            res.push_back(v.toStdString());
+        }
+        ui->line_lang->setStyleSheet("");
+        // TODO: 这里应当去重，但是不能使用 std::sort 和 uniq
+
+        if(tesseract_->GetUsedLangs() == res) return;
+
+        tesseract_->LoadLangs(res);
+    });
 
     ui->lbl_img->installEventFilter(this);
 
@@ -100,7 +107,6 @@ MainWindow::MainWindow(QWidget* parent)
 
         ui->browser_txt->setHtml(hig.ShaderCode(res.get()).c_str());
     });
-    ui->btn_lang->setText(fmt::format("选择语言模型({})", fmt::join(usedLangs, ", ")).c_str());
 }
 
 MainWindow::~MainWindow() {

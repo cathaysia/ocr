@@ -20,7 +20,6 @@ OcrTesseract::~OcrTesseract() {
     api_ = nullptr;
 }
 
-// FIXME: 中文识别时出现的空格
 std::shared_ptr<char> OcrTesseract::Image(std::string const& path) {
     Pix* image = pixRead(path.c_str());
 
@@ -53,6 +52,7 @@ std::vector<std::string> OcrTesseract::GetAvailableLangs() {
 void OcrTesseract::LoadLangs(std::vector<std::string> const& langs) {
     auto lan = fmt::format("{}", fmt::join(langs, "+"));
     auto ret = api_->Init(nullptr, lan.c_str());
+    spdlog::info("加载的语言为：{}", langs);
     if(ret) {
         throw std::runtime_error("tesseract 初始化失败");
     }

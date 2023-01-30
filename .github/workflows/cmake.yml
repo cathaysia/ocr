@@ -47,7 +47,7 @@ jobs:
       - name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.DEPLOY_TOKEN }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: ${{ github.run_id }}
           prerelease: false
           title: "build-linux"
@@ -86,7 +86,7 @@ jobs:
       - name: Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.DEPLOY_TOKEN }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: ${{ github.run_id }}
           prerelease: false
           title: "build windows"

@@ -48,12 +48,6 @@ MainWindow::MainWindow(QWidget* parent)
         ui->line_lang->setText(fmt::format("{}", fmt::join(usedLangs, ", ")).c_str());
 
         ui->line_lang->SetCmpList(qlangs);
-
-        // auto comp = new QCompleter(qlangs, this);
-        // comp->setCompletionMode(QCompleter::PopupCompletion);
-        // comp->setCaseSensitivity(Qt::CaseSensitivity::CaseInsensitive);
-        // FIXME: 现在只能行补全
-        // ui->line_lang->setCompleter(comp);
     }
 
     connect(ui->line_lang, &QLineEdit::textChanged, [this](QString const& text) {

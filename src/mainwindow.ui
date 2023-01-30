@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -40,28 +40,45 @@
      </layout>
     </item>
     <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QLabel" name="lbl_img">
-       <property name="text">
-        <string>点击选择图片</string>
-       </property>
-      </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="lbl_img">
+        <property name="text">
+         <string>点击选择图片</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>语言模型</string>
-            </property>
-           </widget>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>语言模型</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>高亮主题</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="MenuLineEdit" name="line_lang"/>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="MenuLineEdit" name="line_lang"/>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cbox_themes"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -69,8 +86,8 @@
          <widget class="QTextBrowser" name="browser_txt"/>
         </item>
        </layout>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

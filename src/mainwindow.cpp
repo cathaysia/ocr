@@ -34,6 +34,14 @@ MainWindow::MainWindow(QWidget* parent)
         spdlog::error("快捷键注册失败");
     }
 
+    CodeHighLightCode hi;
+    auto              r = hi.GetAvailableThemes();
+    for(auto const& item: r) {
+        ui->cbox_themes->addItem(item.c_str());
+    }
+
+    ui->cbox_themes->setCurrentText("one-dark");
+
     auto                        usedLangs = tesseract_->GetUsedLangs();
     std::map<std::string, bool> usedLangsMap;
     {
@@ -101,7 +109,7 @@ MainWindow::MainWindow(QWidget* parent)
 
         CodeHighLightCode hig;
 
-        ui->browser_txt->setHtml(hig.ShaderCode(res.get()).c_str());
+        ui->browser_txt->setHtml(hig.ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString()).c_str());
     });
 }
 

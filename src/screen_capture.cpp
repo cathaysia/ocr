@@ -5,7 +5,7 @@
 #include <QPainter>
 #include <QScreen>
 
-ScreenCapture::ScreenCapture(QWidget* parent) : QWidget(parent) {
+ScreenCapture::ScreenCapture(QWidget* parent) : QDialog(parent) {
     setMouseTracking(true);
     hide();
 }
@@ -14,12 +14,23 @@ void ScreenCapture::paintEvent(QPaintEvent* event) {
     QPainter painter;
     painter.begin(this);
     painter.setPen({ Qt::red, 2 });
+
+    QPixmap pix(pix_.size());
+    pix.fill(QColor(0, 0, 0, 255 * 0.5));
+
+    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Source);
     painter.drawPixmap(0, 0, pix_);
 
     if(endPoint_ != QPoint()) {
-        painter.drawRect(startPoint_.x(), startPoint_.y(), endPoint_.x() - startPoint_.x(),
-                         endPoint_.y() - startPoint_.y());
+        QPainter p2(&pix);
+        p2.setCompositionMode(QPainter::CompositionMode_Clear);
+        p2.eraseRect(startPoint_.x(), startPoint_.y(), endPoint_.x() - startPoint_.x(),
+                     endPoint_.y() - startPoint_.y());
+        p2.end();
     }
+
+    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
+    painter.drawPixmap(0, 0, pix);
 
     painter.end();
 }

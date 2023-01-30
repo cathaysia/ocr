@@ -1,11 +1,11 @@
 #pragma once
 
+#include <QDialog>
 #include <QPixmap>
-#include <QWidget>
 
 class QMouseEvent;
 
-class ScreenCapture : public QWidget {
+class ScreenCapture : public QDialog {
     Q_OBJECT;
 
 public:

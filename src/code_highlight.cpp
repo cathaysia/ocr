@@ -33,7 +33,7 @@ CodeHighLightCode::~CodeHighLightCode() {
 }
 
 std::string CodeHighLightCode::ShaderCode(std::string const& content, std::string const& theme) {
-    if(!IsAvailable()) return {};
+    if(!IsAvailable()) return content;
 
     std::string res = content;
 

@@ -28,22 +28,20 @@ MainWindow::MainWindow(QWidget* parent)
     , ui(new Ui::MainWindow)
     , capture_(new ScreenCapture(nullptr))
     , tesseract_(new OcrTesseract())
-    , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp)) {
+    , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp))
+    , high_(new CodeHighLightCode) {
     ui->setupUi(this);
     if(!hotkey_->isRegistered()) {
         spdlog::error("快捷键注册失败");
     }
 
-    CodeHighLightCode hi;
-    auto              r = hi.GetAvailableThemes();
-    for(auto const& item: r) {
+    auto r = high_->GetAvailableThemes();
+    std::for_each(r.begin(), r.end(), [this](std::string const& item) {
         ui->cbox_themes->addItem(item.c_str());
-    }
+    });
 
     ui->cbox_themes->setCurrentText("one-dark");
 
-    auto                        usedLangs = tesseract_->GetUsedLangs();
-    std::map<std::string, bool> usedLangsMap;
     {
         auto langs     = tesseract_->GetAvailableLangs();
         auto usedLangs = tesseract_->GetUsedLangs();
@@ -58,58 +56,32 @@ MainWindow::MainWindow(QWidget* parent)
         ui->line_lang->SetCmpList(qlangs);
     }
 
-    connect(ui->line_lang, &QLineEdit::textChanged, [this](QString const& text) {
-        auto langs = tesseract_->GetAvailableLangs();
-        auto res   = std::vector<std::string>();
+    connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
+        ui->lbl_img->setPixmap(pixmap);
+        QBuffer buffer;
+        buffer.open(QIODevice::ReadWrite);
+        pixmap.save(&buffer, "PNG");
+        auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
-        for(auto& v: text.split(",")) {
-            v = v.trimmed();
-            if(v.isEmpty()) continue;
-            qDebug() << v;
-            if(std::find(langs.begin(), langs.end(), v.toStdString()) == langs.end()) {
-                spdlog::info("{} 不在支持的语言列表中，忽略", v.toStdString());
-                ui->line_lang->setStyleSheet("color: red;");
-                return;
-            }
-            res.push_back(v.toStdString());
-        }
-        ui->line_lang->setStyleSheet("");
-        // TODO: 这里应当去重，但是不能使用 std::sort 和 uniq
-
-        if(tesseract_->GetUsedLangs() == res) return;
-
-        tesseract_->LoadLangs(res);
+        auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
+        emit signalHtmlReady(html.c_str());
     });
+
+    connect(this, &MainWindow::signalHtmlReady, [this](QString const& html) {
+        ui->browser_txt->setHtml(html);
+    });
+    connect(this, &MainWindow::signalPlaintxtReady, [this](QString const& txt) {
+        ui->browser_txt->setPlainText(txt);
+    });
+
+    connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotHandleLineedit);
 
     ui->lbl_img->installEventFilter(this);
 
-    auto cap = [this]() {
-        // FIXME: 选中后，主窗口会闪烁
-        if(ui->cbox_hidden->isChecked()) {
-            showMinimized();
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            capture_->capture();
-            showNormal();
-            activateWindow();
-        } else {
-            capture_->capture();
-        }
-    };
-
-    connect(ui->btn_capture, &QPushButton::clicked, cap);
-    connect(hotkey_, &QHotkey::activated, cap);
-
+    connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
+    connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
-        ui->lbl_img->setPixmap(pix);
-
-        QBuffer buffer;
-        buffer.open(QIODevice::ReadWrite);
-        pix.save(&buffer, "PNG");
-        auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
-
-        CodeHighLightCode hig;
-
-        ui->browser_txt->setHtml(hig.ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString()).c_str());
+        emit signalPixmapReady(pix);
     });
 }
 
@@ -117,10 +89,12 @@ MainWindow::~MainWindow() {
     delete ui;
     delete capture_;
     delete tesseract_;
+    delete high_;
 
     ui         = nullptr;
     tesseract_ = nullptr;
     capture_   = nullptr;
+    high_      = nullptr;
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
@@ -130,10 +104,40 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
     QPixmap pix { pix_path };
     if(pix.isNull()) return false;
 
-    ui->lbl_img->setPixmap(pix);
-
-    auto res = tesseract_->Image(pix_path.toStdString());
-    ui->browser_txt->setPlainText({ res.get() });
+    emit signalPixmapReady(pix);
 
     return true;
+}
+void MainWindow::slotCaptureScreen() {
+    if(ui->cbox_hidden->isChecked()) {
+        showMinimized();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        capture_->capture();
+        showNormal();
+        activateWindow();
+    } else {
+        capture_->capture();
+    }
+}
+void MainWindow::slotHandleLineedit(QString const& text) {
+    auto langs = tesseract_->GetAvailableLangs();
+    auto res   = std::vector<std::string>();
+
+    for(auto& v: text.split(",")) {
+        v = v.trimmed();
+        if(v.isEmpty()) continue;
+        qDebug() << v;
+        if(std::find(langs.begin(), langs.end(), v.toStdString()) == langs.end()) {
+            spdlog::info("{} 不在支持的语言列表中，忽略", v.toStdString());
+            ui->line_lang->setStyleSheet("color: red;");
+            return;
+        }
+        res.push_back(v.toStdString());
+    }
+    ui->line_lang->setStyleSheet("");
+    // TODO: 这里应当去重，但是不能使用 std::sort 和 uniq
+
+    if(tesseract_->GetUsedLangs() == res) return;
+
+    tesseract_->LoadLangs(res);
 }

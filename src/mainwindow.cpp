@@ -39,6 +39,10 @@ MainWindow::MainWindow(QWidget* parent)
     std::for_each(r.begin(), r.end(), [this](std::string const& item) {
         ui->cbox_themes->addItem(item.c_str());
     });
+    if(r.size() == 0) {
+        ui->lbl_themes->setMaximumSize(0, 0);
+        ui->cbox_themes->setMaximumSize(0, 0);
+    }
 
     ui->cbox_themes->setCurrentText("one-dark");
 

@@ -29,13 +29,13 @@ MainWindow::MainWindow(QWidget* parent)
     , capture_(new ScreenCapture(nullptr))
     , tesseract_(new OcrTesseract())
     , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp))
-    , high_(new CodeHighLightCode) {
+    , high_(CodeHighLightCode::GetInstance()) {
     ui->setupUi(this);
     if(!hotkey_->isRegistered()) {
         spdlog::error("快捷键注册失败");
     }
 
-    auto r = high_->GetAvailableThemes();
+    auto r = high_.GetAvailableThemes();
     std::for_each(r.begin(), r.end(), [this](std::string const& item) {
         ui->cbox_themes->addItem(item.c_str());
     });
@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget* parent)
         pixmap.save(&buffer, "PNG");
         auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
-        auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
+        auto html = high_.ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
         emit signalHtmlReady(html.c_str());
     });
 
@@ -89,12 +89,10 @@ MainWindow::~MainWindow() {
     delete ui;
     delete capture_;
     delete tesseract_;
-    delete high_;
 
     ui         = nullptr;
     tesseract_ = nullptr;
     capture_   = nullptr;
-    high_      = nullptr;
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* e) {

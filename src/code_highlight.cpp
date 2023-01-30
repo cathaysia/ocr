@@ -9,6 +9,11 @@
 namespace py = pybind11;
 using namespace py::literals;
 
+CodeHighLightCode& CodeHighLightCode::GetInstance() {
+    static CodeHighLightCode high;
+    return high;
+}
+
 CodeHighLightCode::CodeHighLightCode() : guard_(new py::scoped_interpreter {}) {
     auto sys = py::module_::import("sys");
     sys.attr("path").attr("append")(QCoreApplication::applicationDirPath().toStdString());

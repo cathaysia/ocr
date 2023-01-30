@@ -11,6 +11,10 @@ class TessBaseAPI;
 class OcrTesseract {
 public:
     OcrTesseract();
+    OcrTesseract(const OcrTesseract&) = delete;
+    OcrTesseract(OcrTesseract&& b);
+    OcrTesseract& operator=(const OcrTesseract&) = delete;
+    OcrTesseract& operator=(OcrTesseract&& b);
     ~OcrTesseract();
 
     std::shared_ptr<char> Image(std::string const& path);

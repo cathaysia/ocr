@@ -74,3 +74,13 @@ std::vector<std::string> OcrTesseract::GetUsedLangs() {
 
     return res;
 }
+OcrTesseract::OcrTesseract(OcrTesseract&& b) {
+    this->operator=(std::move(b));
+};
+OcrTesseract& OcrTesseract::operator=(OcrTesseract&& b) {
+    delete api_;
+    api_   = b.api_;
+    b.api_ = nullptr;
+
+    return *this;
+};

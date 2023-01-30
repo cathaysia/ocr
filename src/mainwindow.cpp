@@ -64,7 +64,11 @@ MainWindow::MainWindow(QWidget* parent)
         auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
         auto html = high_.ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
-        emit signalHtmlReady(html.c_str());
+        if(high_.IsAvailable()) {
+            emit signalHtmlReady(html.c_str());
+        } else {
+            emit signalPlaintxtReady(html.c_str());
+        }
     });
 
     connect(this, &MainWindow::signalHtmlReady, [this](QString const& html) {

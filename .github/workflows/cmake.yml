@@ -1,0 +1,94 @@
+name: CMake
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+
+      - uses: lukka/get-cmake@latest
+      - uses: jurplel/install-qt-action@v3
+        with:
+          cache: true
+      - name: setup vcpkg
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgGitCommitId: "f14984af3738e69f197bf0e647a8dca12de92996"
+          vcpkgJsonGlob: "**/vcpkg.json"
+          runVcpkgInstall: true
+      - name: solve_deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install xz-utils
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -GNinja -Dscreen_BUILD_TEST=OFF  -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: copy files
+        run: |
+          ldd ${{github.workspace}}/build/bin/dragon_screen | egrep -v '(linux-vdso)|(ld-linux)' | awk '{print $3}'  | xargs -I {} cp -L {} ${{github.workspace}}/build/bin
+          cp ${{github.workspace}}/src/code_highlight.py ${{github.workspace}}/build/bin
+          mkdir ${{github.workspace}}/releases
+          tar -cJf ${{github.workspace}}/releases/dragon_screen-linux-x86_64.tar.xz ${{github.workspace}}/build/bin/
+
+      - name: Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ github.run_id }}
+          prerelease: false
+          title: "build-linux"
+          files: |
+            ${{github.workspace}}/releases
+
+  build-windows:
+    runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+
+      - uses: lukka/get-cmake@latest
+      - uses: jurplel/install-qt-action@v3
+        with:
+          cache: true
+      - name: setup vcpkg
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgGitCommitId: "f14984af3738e69f197bf0e647a8dca12de92996"
+          vcpkgJsonGlob: "**/vcpkg.json"
+          runVcpkgInstall: true
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -GNinja -Dscreen_BUILD_TEST=OFF  -DCMAKE_TOOLCHAIN_FILE="${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: copy files
+        run: |
+          windeployqt ${{github.workspace}}/build/bin/dragon_screen
+
+      - name: Release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ github.run_id }}
+          prerelease: false
+          title: "build windows"
+          files: |
+            ${{github.workspace}}/releases

@@ -1,5 +1,8 @@
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(
   dragon_screen
@@ -8,7 +11,11 @@ add_executable(
   main.cpp
   mainwindow.cpp
   mainwindow.h
+  delimitedcompleter.h
+  delimitedcompleter.cpp
   mainwindow.ui
+  menulineedit.cpp
+  menulineedit.h
   ocr_tesseract.cpp
   ocr_tesseract.h
   screen_capture.cpp

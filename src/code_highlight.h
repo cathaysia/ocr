@@ -5,6 +5,7 @@
 
 namespace pybind11 {
 class scoped_interpreter;
+class module_;
 class object;
 }    // namespace pybind11
 
@@ -22,7 +23,9 @@ public:
 
     std::string              ShaderCode(std::string const& content, std::string const& theme);
     std::vector<std::string> GetAvailableThemes();
+    bool                     IsAvailable();
 
 private:
     pybind11::scoped_interpreter* guard_;
+    pybind11::module_*            module_;
 };

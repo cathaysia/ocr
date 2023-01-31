@@ -109,6 +109,13 @@ MainWindow::MainWindow(QWidget* parent)
         b->SetPixmap(img);
         b->show();
     });
+
+    connect(ui->btn_save, &QPushButton::clicked, [this]() {
+        auto file_name = QFileDialog::getSaveFileName();
+        if(file_name.isEmpty()) return;
+
+        ui->lbl_img->pixmap(Qt::ReturnByValue).save(file_name);
+    });
 }
 
 MainWindow::~MainWindow() {

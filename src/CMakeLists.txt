@@ -40,7 +40,7 @@ endif()
 
 find_package(Tesseract REQUIRED)
 find_package(
-  Qt5
+  Qt${QT_DEFAULT_MAJOR_VERSION}
   COMPONENTS Widgets
   REQUIRED
 )
@@ -53,7 +53,7 @@ target_link_libraries(
   PRIVATE fmt::fmt
           spdlog::spdlog
           Tesseract::libtesseract
-          Qt5::Widgets
+          Qt${QT_DEFAULT_MAJOR_VERSION}::Widgets
           QHotkey::QHotkey
           pybind11::embed
           ${PROJECT_NAME}::common

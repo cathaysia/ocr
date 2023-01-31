@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     ui->btn_float->setDisabled(true);
+    ui->btn_save->setDisabled(true);
 
     auto r = high_->GetAvailableThemes();
     std::for_each(r.begin(), r.end(), [this](std::string const& item) {
@@ -66,6 +67,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         ui->lbl_img->setPixmap(pixmap);
         ui->btn_float->setEnabled(true);
+        ui->btn_save->setEnabled(true);
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
         pixmap.save(&buffer, "PNG");
@@ -100,10 +102,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(ui->btn_float, &QPushButton::clicked, [this]() {
         auto const& img = ui->lbl_img->pixmap(Qt::ReturnByValue);
-        if(img.isNull()) {
-            ui->btn_float->setDisabled(true);
-            return;
-        }
 
         auto b = new FloatLabel;
         b->SetPixmap(img);

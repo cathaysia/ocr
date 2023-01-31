@@ -5,7 +5,11 @@
 #include <spdlog/spdlog.h>
 
 CodeHighLightCode::CodeHighLightCode() : module_(new py::module_) {
-    GetPyInstance();
+    auto res = GetPyInstance();
+    if(res == nullptr) {
+        module_ = nullptr;
+        return;
+    }
 
     try {
         *module_ = py::module_::import("code_highlight");

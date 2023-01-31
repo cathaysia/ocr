@@ -90,6 +90,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
         emit signalPixmapReady(pix);
+        showNormal();
+        activateWindow();
     });
 }
 
@@ -119,8 +121,6 @@ void MainWindow::slotCaptureScreen() {
         showMinimized();
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         capture_->capture();
-        showNormal();
-        activateWindow();
     } else {
         capture_->capture();
     }

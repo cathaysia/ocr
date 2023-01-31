@@ -21,7 +21,7 @@ public:
     bool eventFilter(QObject* obj, QEvent* e) override;
 
     void slotCaptureScreen();
-    void slotHandleLineedit(QString const& text);
+    void slotReloadLangs(QString const& text);
 
 signals:
     void signalPixmapReady(QPixmap const& pixmap);

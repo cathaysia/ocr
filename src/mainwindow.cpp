@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <map>
 #include <thread>
 
 #include <fmt/format.h>
@@ -66,6 +67,19 @@ MainWindow::MainWindow(QWidget* parent)
         ui->line_lang->SetCmpList(qlangs);
     }
 
+    ui->lbl_img->installEventFilter(this);
+
+    connect(this, &MainWindow::signalHtmlReady, ui->browser_txt, &QTextBrowser::setHtml);
+    connect(this, &MainWindow::signalPlaintxtReady, ui->browser_txt, &QTextBrowser::setPlainText);
+    connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotReloadLangs);
+    connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
+    connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
+    connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
+        emit signalPixmapReady(pix);
+        showNormal();
+        activateWindow();
+    });
+
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         ui->lbl_img->setPixmap(pixmap);
         ui->btn_float->setEnabled(true);
@@ -73,7 +87,11 @@ MainWindow::MainWindow(QWidget* parent)
         ui->btn_copy->setEnabled(true);
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
-        pixmap.save(&buffer, "PNG");
+        auto ret = pixmap.save(&buffer, "PNG");
+        if(!ret) {
+            spdlog::error("保存图片到缓冲区失败");
+            return;
+        }
         auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
         auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
@@ -82,25 +100,6 @@ MainWindow::MainWindow(QWidget* parent)
         } else {
             emit signalPlaintxtReady(html.c_str());
         }
-    });
-
-    connect(this, &MainWindow::signalHtmlReady, [this](QString const& html) {
-        ui->browser_txt->setHtml(html);
-    });
-    connect(this, &MainWindow::signalPlaintxtReady, [this](QString const& txt) {
-        ui->browser_txt->setPlainText(txt);
-    });
-
-    connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotHandleLineedit);
-
-    ui->lbl_img->installEventFilter(this);
-
-    connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
-    connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
-    connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
-        emit signalPixmapReady(pix);
-        showNormal();
-        activateWindow();
     });
 
     connect(ui->btn_float, &QPushButton::clicked, [this]() {
@@ -159,17 +158,19 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
     return true;
 }
 void MainWindow::slotCaptureScreen() {
-    if(ui->cbox_hidden->isChecked()) {
-        showMinimized();
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    if(!ui->cbox_hidden->isChecked()) {
         capture_->capture();
-    } else {
-        capture_->capture();
+        return;
     }
+
+    showMinimized();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    capture_->capture();
 }
-void MainWindow::slotHandleLineedit(QString const& text) {
+void MainWindow::slotReloadLangs(QString const& text) {
     auto langs = tesseract_->GetAvailableLangs();
     auto res   = std::vector<std::string>();
+    auto hashK = std::map<std::string, bool>();
 
     for(auto& v: text.split(",")) {
         v = v.trimmed();
@@ -180,10 +181,12 @@ void MainWindow::slotHandleLineedit(QString const& text) {
             ui->line_lang->setStyleSheet("color: red;");
             return;
         }
-        res.push_back(v.toStdString());
+        if(hashK.count(v.toStdString()) == 0) {
+            res.push_back(v.toStdString());
+            hashK[v.toStdString()] = true;
+        }
     }
     ui->line_lang->setStyleSheet("");
-    // TODO: 这里应当去重，但是不能使用 std::sort 和 uniq
 
     if(tesseract_->GetUsedLangs() == res) return;
 

@@ -27,17 +27,6 @@ add_custom_command(
           "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins"
 )
 
-include(FindDeployQt)
-
-if(DeployQt)
-  add_custom_command(
-    TARGET ${PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${DeployQt} $<TARGET_FILE:${PROJECT_NAME}>
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  )
-endif()
-
 find_package(
   Qt${QT_DEFAULT_MAJOR_VERSION}
   COMPONENTS Widgets

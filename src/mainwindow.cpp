@@ -3,6 +3,7 @@
 
 #include "code_highlight.h"
 #include "tesseract/ocr_tesseract.h"
+#include "ui/float_label.h"
 
 #include <chrono>
 #include <iostream>
@@ -35,6 +36,8 @@ MainWindow::MainWindow(QWidget* parent)
         spdlog::error("快捷键注册失败");
     }
 
+    ui->btn_float->setDisabled(true);
+
     auto r = high_->GetAvailableThemes();
     std::for_each(r.begin(), r.end(), [this](std::string const& item) {
         ui->cbox_themes->addItem(item.c_str());
@@ -62,6 +65,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         ui->lbl_img->setPixmap(pixmap);
+        ui->btn_float->setEnabled(true);
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
         pixmap.save(&buffer, "PNG");
@@ -92,6 +96,18 @@ MainWindow::MainWindow(QWidget* parent)
         emit signalPixmapReady(pix);
         showNormal();
         activateWindow();
+    });
+
+    connect(ui->btn_float, &QPushButton::clicked, [this]() {
+        auto const& img = ui->lbl_img->pixmap(Qt::ReturnByValue);
+        if(img.isNull()) {
+            ui->btn_float->setDisabled(true);
+            return;
+        }
+
+        auto b = new FloatLabel;
+        b->SetPixmap(img);
+        b->show();
     });
 }
 

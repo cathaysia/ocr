@@ -33,5 +33,5 @@ private:
     ScreenCapture*     capture_;
     OcrTesseract*      tesseract_;
     QHotkey*           hotkey_;
-    CodeHighLightCode& high_;
+    CodeHighLightCode* high_;
 };

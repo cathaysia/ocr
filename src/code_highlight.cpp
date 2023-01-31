@@ -1,22 +1,11 @@
 #include "code_highlight.h"
 
-#include <pybind11/embed.h>
-#include <pybind11/stl.h>
+#include "py.h"
+
 #include <spdlog/spdlog.h>
 
-#include <QCoreApplication>
-
-namespace py = pybind11;
-using namespace py::literals;
-
-CodeHighLightCode& CodeHighLightCode::GetInstance() {
-    static CodeHighLightCode high;
-    return high;
-}
-
-CodeHighLightCode::CodeHighLightCode() : guard_(new py::scoped_interpreter {}), module_(new py::module_) {
-    auto sys = py::module_::import("sys");
-    sys.attr("path").attr("append")(QCoreApplication::applicationDirPath().toStdString());
+CodeHighLightCode::CodeHighLightCode() : module_(new py::module_) {
+    GetPyInstance();
 
     try {
         *module_ = py::module_::import("code_highlight");
@@ -28,8 +17,8 @@ CodeHighLightCode::CodeHighLightCode() : guard_(new py::scoped_interpreter {}), 
 }
 
 CodeHighLightCode::~CodeHighLightCode() {
-    delete guard_;
-    guard_ = nullptr;
+    delete module_;
+    module_ = nullptr;
 }
 
 std::string CodeHighLightCode::ShaderCode(std::string const& content, std::string const& theme) {

@@ -8,16 +8,18 @@ add_executable(
   dragon_screen
   code_highlight.cpp
   code_highlight.h
+  delimitedcompleter.cpp
+  delimitedcompleter.h
   main.cpp
   mainwindow.cpp
   mainwindow.h
-  delimitedcompleter.h
-  delimitedcompleter.cpp
   mainwindow.ui
   menulineedit.cpp
   menulineedit.h
   ocr_tesseract.cpp
   ocr_tesseract.h
+  py.cpp
+  py.h
   screen_capture.cpp
   screen_capture.h
 )

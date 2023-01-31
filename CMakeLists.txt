@@ -13,10 +13,17 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(screen_BUILD_TEST "是否启用测试" OFF)
+option(${PROJECT_NAME}_BUILD_TEST "是否启用测试" OFF)
 
-if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-    set(screen_BUILD_TEST ON CACHE INTERNAL "")
+if(${CMAKE_BUILD_TYPE}_ STREQUAL "_")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "" FORCE)
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  set(${PROJECT_NAME}_BUILD_TEST
+      ON
+      CACHE INTERNAL ""
+  )
 endif()
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
@@ -25,7 +32,7 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_subdirectory(extern)
 add_subdirectory(src)
 
-if(${screen_BUILD_TEST})
+if(${${PROJECT_NAME}_BUILD_TEST})
   enable_testing()
   add_subdirectory(test)
 endif()

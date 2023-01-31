@@ -8,6 +8,7 @@ CodeHighLightCode::CodeHighLightCode() : module_(new py::module_) {
     auto res = GetPyInstance();
     if(res == nullptr) {
         module_ = nullptr;
+        spdlog::error("初始化 Python 解释器失败");
         return;
     }
 

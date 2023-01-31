@@ -13,12 +13,11 @@ py::scoped_interpreter* GetPyInstance() {
 
     std::call_once(
         flag,
-        [](py::scoped_interpreter* pinter) {
+        [](py::scoped_interpreter** pinter) {
             try {
-                auto p = new py::scoped_interpreter;
-                pinter = p;
+                auto p  = new py::scoped_interpreter;
+                *pinter = p;
             } catch(std::exception const& e) {
-                spdlog::error("初始化 Python 解释器失败：{}", e.what());
                 return;
             }
 
@@ -29,7 +28,7 @@ py::scoped_interpreter* GetPyInstance() {
             append(app_path);
             append(fmt::format("{}/plugins/", app_path));
         },
-        inter);
+        &inter);
 
     return inter;
 }

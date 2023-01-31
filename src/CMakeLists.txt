@@ -38,7 +38,7 @@ if(DeployQt)
   )
 endif()
 
-find_package(Tesseract REQUIRED)
+include(SearchTesseract)
 find_package(
   Qt${QT_DEFAULT_MAJOR_VERSION}
   COMPONENTS Widgets

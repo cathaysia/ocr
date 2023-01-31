@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "code_highlight.h"
-#include "ocr_tesseract.h"
+#include "tesseract/ocr_tesseract.h"
 
 #include <chrono>
 #include <iostream>

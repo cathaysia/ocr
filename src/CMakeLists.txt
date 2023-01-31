@@ -4,6 +4,7 @@ set(CMAKE_AUTORCC ON)
 
 add_subdirectory(common)
 add_subdirectory(ui)
+add_subdirectory(tesseract)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -15,8 +16,6 @@ add_executable(
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
-  ocr_tesseract.cpp
-  ocr_tesseract.h
 )
 
 add_custom_command(
@@ -38,7 +37,6 @@ if(DeployQt)
   )
 endif()
 
-include(SearchTesseract)
 find_package(
   Qt${QT_DEFAULT_MAJOR_VERSION}
   COMPONENTS Widgets
@@ -52,11 +50,10 @@ target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE fmt::fmt
           spdlog::spdlog
-          leptonica
-          Tesseract::libtesseract
           Qt${QT_DEFAULT_MAJOR_VERSION}::Widgets
           QHotkey::QHotkey
           pybind11::embed
           ${PROJECT_NAME}::common
           ${PROJECT_NAME}::ui
+          ${PROJECT_NAME}::tesseract
 )

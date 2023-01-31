@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
     auto         cur       = QApplication::applicationDirPath();
     auto         data_path = cur + "/tessdata";
     SetEnvIfNotExists("TESSDATA_PREFIX", data_path);
+    SetEnvIfNotExists("PYTHONPATH", cur + "/python");
 
     MainWindow w;
     w.resize(800, 600);

@@ -18,6 +18,7 @@ py::scoped_interpreter* GetPyInstance() {
                 auto p  = new py::scoped_interpreter;
                 *pinter = p;
             } catch(std::exception const& e) {
+                spdlog::error("初始化 Python 解释器失败：{}", e.what());
                 return;
             }
 
@@ -27,6 +28,7 @@ py::scoped_interpreter* GetPyInstance() {
             auto app_path = QCoreApplication::applicationDirPath().toStdString();
             append(app_path);
             append(fmt::format("{}/plugins/", app_path));
+            append(fmt::format("{}/python/site-packages/", app_path));
         },
         &inter);
 

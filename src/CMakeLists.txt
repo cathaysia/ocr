@@ -52,6 +52,7 @@ target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE fmt::fmt
           spdlog::spdlog
+          leptonica
           Tesseract::libtesseract
           Qt${QT_DEFAULT_MAJOR_VERSION}::Widgets
           QHotkey::QHotkey

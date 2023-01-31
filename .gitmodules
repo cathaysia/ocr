@@ -10,3 +10,6 @@
 [submodule "extern/QHotkey"]
 	path = extern/QHotkey
 	url = https://github.com/Skycoder42/QHotkey
+[submodule "extern/leptonica"]
+	path = extern/leptonica
+	url = https://github.com/DanBloomberg/leptonica

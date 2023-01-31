@@ -6,6 +6,7 @@
 #include "ui/float_label.h"
 
 #include <chrono>
+#include <future>
 #include <iostream>
 #include <map>
 #include <thread>
@@ -92,13 +93,22 @@ MainWindow::MainWindow(QWidget* parent)
             spdlog::error("保存图片到缓冲区失败");
             return;
         }
-        auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
+        auto future = std::async(std::launch::async, [&]() {
+            auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
 
-        auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
-        if(high_->IsAvailable()) {
-            emit signalHtmlReady(html.c_str());
-        } else {
-            emit signalPlaintxtReady(html.c_str());
+            auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
+            if(high_->IsAvailable()) {
+                emit signalHtmlReady(html.c_str());
+            } else {
+                emit signalPlaintxtReady(html.c_str());
+            }
+        });
+
+        while(true) {
+            auto result = future.wait_for(std::chrono::milliseconds(50));
+            if(result == std::future_status::ready) break;
+
+            qApp->processEvents();
         }
     });
 

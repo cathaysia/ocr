@@ -14,6 +14,7 @@
 #include <spdlog/spdlog.h>
 
 #include <QBuffer>
+#include <QClipboard>
 #include <QCompleter>
 #include <QFileDialog>
 #include <QKeySequence>
@@ -38,6 +39,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->btn_float->setDisabled(true);
     ui->btn_save->setDisabled(true);
+    ui->btn_copy->setDisabled(true);
 
     auto r = high_->GetAvailableThemes();
     std::for_each(r.begin(), r.end(), [this](std::string const& item) {
@@ -68,6 +70,7 @@ MainWindow::MainWindow(QWidget* parent)
         ui->lbl_img->setPixmap(pixmap);
         ui->btn_float->setEnabled(true);
         ui->btn_save->setEnabled(true);
+        ui->btn_copy->setEnabled(true);
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
         pixmap.save(&buffer, "PNG");
@@ -113,6 +116,24 @@ MainWindow::MainWindow(QWidget* parent)
         if(file_name.isEmpty()) return;
 
         ui->lbl_img->pixmap(Qt::ReturnByValue).save(file_name);
+    });
+
+    connect(ui->btn_copy, &QPushButton::clicked, [this]() {
+        auto const& b = QApplication::clipboard();
+        b->setPixmap(ui->lbl_img->pixmap(Qt::ReturnByValue), QClipboard::Clipboard);
+    });
+    connect(ui->btn_paste, &QPushButton::clicked, [this]() {
+        auto const& b      = QApplication::clipboard();
+        auto        pixmap = b->pixmap();
+        spdlog::info("读取图片 {}", pixmap.isNull());
+        if(pixmap.isNull()) {
+            auto file_name = b->text();
+            pixmap.load(file_name);
+        }
+        spdlog::info("读取图片2 {}", pixmap.isNull());
+
+        if(pixmap.isNull()) return;
+        signalPixmapReady(pixmap);
     });
 }
 

@@ -59,6 +59,20 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btn_copy">
+            <property name="text">
+             <string>拷贝</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_paste">
+            <property name="text">
+             <string>粘贴</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>

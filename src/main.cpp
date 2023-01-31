@@ -11,13 +11,14 @@ void SetEnvIfNotExists(const char* name, QString const& val) {
     if(!res.isEmpty()) return;
 
     qputenv(name, val.toLocal8Bit());
+    spdlog::info("环境变量 {} 设置为 {}", name, val.toStdString());
 }
 
 int main(int argc, char* argv[]) {
-    auto cur       = QApplication::applicationDirPath();
-    auto data_path = cur + "tessdata";
-    SetEnvIfNotExists("TESSDATA_PREFIX", data_path);
     QApplication app(argc, argv);
+    auto         cur       = QApplication::applicationDirPath();
+    auto         data_path = cur + "/tessdata";
+    SetEnvIfNotExists("TESSDATA_PREFIX", data_path);
 
     MainWindow w;
     w.resize(800, 600);

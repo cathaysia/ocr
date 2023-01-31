@@ -10,6 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(
   ${PROJECT_NAME}
+  WIN32
   code_highlight.cpp
   code_highlight.h
   main.cpp

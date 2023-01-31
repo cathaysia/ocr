@@ -33,6 +33,8 @@ endif()
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+include(FeatureSummary)
+
 add_subdirectory(extern)
 add_subdirectory(src)
 
@@ -40,3 +42,5 @@ if(${${PROJECT_NAME}_BUILD_TEST})
   enable_testing()
   add_subdirectory(test)
 endif()
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

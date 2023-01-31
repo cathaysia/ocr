@@ -3,6 +3,14 @@ add_subdirectory(QHotkey)
 set(SW_BUILD OFF CACHE BOOL "使用 SW BUILD")
 add_subdirectory(leptonica)
 
+set(GRAPHICS_DISABLED ON CACHE BOOL "Disable disable graphics (ScrollView)")
+set(DISABLED_LEGACY_ENGINE ON CACHE BOOL "Disable the legacy OCR engine")
+set(BUILD_TRAINING_TOOLS OFF CACHE BOOL "Build training tools")
+set(DISABLE_ARCHIVE ON CACHE BOOL "Disable build with libarchive (if available)")
+set(DISABLE_CURL ON CACHE BOOL "Disable build with libcurl (if available)")
+set(INSTALL_CONFIGS OFF CACHE BOOL "Install tesseract configs")
+add_subdirectory(tesseract)
+
 add_subdirectory(fmt)
 
 set(SPDLOG_ENABLE_PCH ON CACHE BOOL "启用预编译头")

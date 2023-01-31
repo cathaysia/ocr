@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QDialog>
+#include <QWidget>
 
 class QLabel;
 class QMouseEvent;
@@ -8,7 +8,7 @@ class QPoint;
 class QMenu;
 class QTimer;
 
-class FloatLabel : public QDialog {
+class FloatLabel : public QWidget {
     Q_OBJECT;
 
 public:

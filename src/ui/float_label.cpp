@@ -15,7 +15,7 @@
 #include <spdlog/spdlog.h>
 
 FloatLabel::FloatLabel(QWidget* parent)
-    : QDialog(parent)
+    : QWidget(parent)
     , menu_(new QMenu(this))
     , lbl_img_(new QLabel(this))
     , startPoint_(new QPoint)
@@ -43,11 +43,13 @@ FloatLabel::FloatLabel(QWidget* parent)
     auto top = menu_->addAction("置顶窗口");
     connect(top, &QAction::triggered, [this]() {
         setWindowFlag(Qt::WindowStaysOnTopHint, true);
+        show();
     });
 
     auto notop = menu_->addAction("取消置顶");
     connect(notop, &QAction::triggered, [this]() {
         setWindowFlag(Qt::WindowStaysOnTopHint, false);
+        show();
     });
 
     connect(this, &FloatLabel::signalRequestContextMenu, [this](QPoint const& pos) {

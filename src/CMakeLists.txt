@@ -2,26 +2,21 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+add_subdirectory(common)
+add_subdirectory(ui)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(
   dragon_screen
   code_highlight.cpp
   code_highlight.h
-  delimitedcompleter.cpp
-  delimitedcompleter.h
   main.cpp
   mainwindow.cpp
   mainwindow.h
   mainwindow.ui
-  menulineedit.cpp
-  menulineedit.h
   ocr_tesseract.cpp
   ocr_tesseract.h
-  py.cpp
-  py.h
-  screen_capture.cpp
-  screen_capture.h
 )
 
 find_package(Tesseract REQUIRED)
@@ -42,4 +37,6 @@ target_link_libraries(
           Qt5::Widgets
           QHotkey::QHotkey
           pybind11::embed
+          ${PROJECT_NAME}::common
+          ${PROJECT_NAME}::ui
 )

@@ -1,6 +1,6 @@
 #include "code_highlight.h"
 
-#include "py.h"
+#include "common/py.h"
 
 #include <spdlog/spdlog.h>
 

@@ -23,3 +23,7 @@ if(${${PROJECT_NAME}_BUILD_TEST})
   add_subdirectory(googletest)
   include(GoogleTest)
 endif()
+
+if(WIN32)
+    add_subdirectory(kvantum-on-windows)
+endif()

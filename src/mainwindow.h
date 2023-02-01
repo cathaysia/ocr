@@ -11,6 +11,10 @@ class CodeHighLightCode;
 class ScreenCapture;
 class QHotkey;
 
+namespace Kvantum {
+class Style;
+};
+
 class MainWindow : public QMainWindow {
     Q_OBJECT;
 
@@ -36,4 +40,5 @@ private:
     OcrTesseract*      tesseract_;
     QHotkey*           hotkey_;
     CodeHighLightCode* high_;
+    Kvantum::Style*    kvantum_;
 };

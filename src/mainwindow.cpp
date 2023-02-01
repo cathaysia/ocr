@@ -27,6 +27,10 @@
 
 #include <QHotkey>
 
+#ifdef _WIN32
+    #include <Kvantum.h>
+#endif
+
 #include "screen_capture.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -35,7 +39,8 @@ MainWindow::MainWindow(QWidget* parent)
     , capture_(new ScreenCapture(nullptr))
     , tesseract_(new OcrTesseract())
     , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp))
-    , high_(new CodeHighLightCode) {
+    , high_(new CodeHighLightCode)
+    , kvantum_(nullptr) {
     ui->setupUi(this);
     if(!hotkey_->isRegistered()) {
         spdlog::error("快捷键注册失败");
@@ -208,6 +213,31 @@ void MainWindow::slotReloadLangs(QString const& text) {
 }
 
 void MainWindow::InitSettingPage() {
+
+#ifdef _WIN32
+    QDir path(QApplication::applicationDirPath() + "/themes/Kvantum/");
+    ui->cbox_style->addItems(path.entryList(QDir::Dirs | QDir::NoDot | QDir::NoDotDot));
+    connect(ui->cbox_style, &QComboBox::currentTextChanged, [this](QString const& value) {
+        spdlog::info("设置 Kvantum 主题：{}", value.toStdString());
+        QDir path(QApplication::applicationDirPath() + "/themes/");
+        auto conf_file  = QString("%1/Kvantum/%2/%2.kvconfig").arg(path.absolutePath()).arg(value);
+        auto svg_file   = QString("%1/Kvantum/%2/%2.svg").arg(path.absolutePath()).arg(value);
+        auto color_file = QString("%1/colors/%2.colors").arg(path.absolutePath()).arg(value);
+        spdlog::info("主题文件为：{}\n{}\n{}\n", conf_file.toStdString(), svg_file.toStdString(),
+                     color_file.toStdString());
+
+        std::once_flag kvantum_flag;
+        std::call_once(
+            kvantum_flag,
+            [](Kvantum::Style** style) {
+                *style = new Kvantum::Style();
+                qApp->setStyle(*style);
+            },
+            &kvantum_);
+        kvantum_->unpolish(qApp);
+        kvantum_->setTheme(conf_file, svg_file, color_file);
+    });
+#else
     // clang-format off
     static std::map<std::string, const char*> classMap {
         { "highcontrastinverse", "HighContrastInverse" },
@@ -229,4 +259,5 @@ void MainWindow::InitSettingPage() {
     connect(ui->cbox_style, &QComboBox::currentTextChanged, [this](QString const& value) {
         qApp->setStyle(QStyleFactory::create(value));
     });
+#endif
 }

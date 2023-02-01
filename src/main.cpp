@@ -3,7 +3,6 @@
 
 #include <QApplication>
 #include <QtGlobal>
-
 #include "mainwindow.h"
 
 void SetEnvIfNotExists(const char* name, QString const& val) {

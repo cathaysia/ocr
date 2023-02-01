@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tab_widget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_home">
        <attribute name="title">
@@ -95,8 +95,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>374</width>
-                 <height>375</height>
+                 <width>372</width>
+                 <height>412</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -160,20 +160,36 @@
        <attribute name="title">
         <string>设置</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>风格</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="cbox_style"/>
-          </item>
-         </layout>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>字体</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QFontComboBox" name="cbox_fontFamily"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>字号</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="spain_fontSize"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>风格</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="cbox_style"/>
         </item>
        </layout>
       </widget>
@@ -187,7 +203,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>31</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

@@ -7,15 +7,21 @@ add_subdirectory(ui)
 add_subdirectory(tesseract)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-add_executable(
-    ${PROJECT_NAME} WIN32
+set(${PROJECT_NAME}_SRC
     code_highlight.cpp
     code_highlight.h
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    mainwindow.ui
+    mainwindow.ui)
+
+if(WIN32)
+    list(APPEND ${PROJECT_NAME}_SRC assets/defaulttheme.qrc)
+endif()
+
+add_executable(
+    ${PROJECT_NAME} WIN32
+    ${${PROJECT_NAME}_SRC}
 )
 
 add_custom_command(

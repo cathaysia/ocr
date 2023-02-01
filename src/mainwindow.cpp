@@ -21,6 +21,7 @@
 #include <QFileDialog>
 #include <QKeySequence>
 #include <QLabel>
+#include <QSpinBox>
 #include <QLineEdit>
 #include <QStyle>
 #include <QStyleFactory>
@@ -236,6 +237,7 @@ void MainWindow::InitSettingPage() {
             &kvantum_);
         kvantum_->unpolish(qApp);
         kvantum_->setTheme(conf_file, svg_file, color_file);
+        qApp->setPalette(kvantum_->standardPalette());
     });
 #else
     // clang-format off
@@ -260,4 +262,20 @@ void MainWindow::InitSettingPage() {
         qApp->setStyle(QStyleFactory::create(value));
     });
 #endif
+
+    QFont f= qApp->font();
+    ui->cbox_fontFamily->setCurrentText(f.family());
+    ui->spain_fontSize->setValue(f.pointSize());
+
+    connect(ui->cbox_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily){
+       QFont f = qApp->font();
+       f.setFamily(fontFamily);
+       qApp->setFont(f);
+    });
+
+    connect(ui->spain_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize){
+        QFont f= qApp->font();
+        f.setPointSize(fontSize);
+        qApp->setFont(f);
+    });
 }

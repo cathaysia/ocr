@@ -23,6 +23,8 @@ public:
     void slotCaptureScreen();
     void slotReloadLangs(QString const& text);
 
+private:
+    void InitSettingPage();
 signals:
     void signalPixmapReady(QPixmap const& pixmap);
     void signalHtmlReady(QString const& html);

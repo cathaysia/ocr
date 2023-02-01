@@ -22,6 +22,8 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QStyle>
+#include <QStyleFactory>
 
 #include <QHotkey>
 
@@ -144,6 +146,8 @@ MainWindow::MainWindow(QWidget* parent)
         if(pixmap.isNull()) return;
         signalPixmapReady(pixmap);
     });
+
+    InitSettingPage();
 }
 
 MainWindow::~MainWindow() {
@@ -201,4 +205,28 @@ void MainWindow::slotReloadLangs(QString const& text) {
     if(tesseract_->GetUsedLangs() == res) return;
 
     tesseract_->LoadLangs(res);
+}
+
+void MainWindow::InitSettingPage() {
+    // clang-format off
+    static std::map<std::string, const char*> classMap {
+        { "highcontrastinverse", "HighContrastInverse" },
+        { "highcontrast", "HighContrast" },
+        { "adwaita-highcontrastinverse", "Adwaita-HighContrastInverse" },
+        { "adwaita-highcontrast", "Adwaita-HighContrast" },
+        { "adwaita-dark", "Adwaita-Dark" },
+        { "adwaita", "Adwaita" },
+        { "windows", "Windows" },
+        { "fusion", "Fusion" }
+    };
+    // clang-format on
+
+    auto styles = QStyleFactory::keys();
+    ui->cbox_style->addItems(styles);
+    ui->cbox_style->setCurrentText(classMap[qApp->style()->objectName().toStdString()]);
+    spdlog::info("当前 Style 为：{}", qApp->style()->objectName().toStdString());
+
+    connect(ui->cbox_style, &QComboBox::currentTextChanged, [this](QString const& value) {
+        qApp->setStyle(QStyleFactory::create(value));
+    });
 }

@@ -56,9 +56,8 @@ void ScreenCapture::mouseReleaseEvent(QMouseEvent* e) {
     startPoint_ = {};
     endPoint_   = {};
 
-    signalScreenReady(pix_);
-
     hide();
+    signalScreenReady(pix_);
 }
 void ScreenCapture::capture() {
     auto screen = QGuiApplication::primaryScreen();

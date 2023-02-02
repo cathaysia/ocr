@@ -22,6 +22,7 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSettings>
 #include <QSpinBox>
 #include <QStyle>
 #include <QStyleFactory>
@@ -37,9 +38,10 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , settings_(new QSettings(QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat))
     , capture_(new ScreenCapture(nullptr))
     , tesseract_(new OcrTesseract())
-    , hotkey_(new QHotkey(QKeySequence("F10"), true, qApp))
+    , hotkey_(new QHotkey(QKeySequence(settings_->value("keyShortcut", "F10").toString()), true, qApp))
     , high_(new CodeHighLightCode)
     , kvantum_(nullptr) {
     ui->setupUi(this);
@@ -60,7 +62,10 @@ MainWindow::MainWindow(QWidget* parent)
         ui->cbox_themes->setMaximumSize(0, 0);
     }
 
-    ui->cbox_themes->setCurrentText("one-dark");
+    ui->cbox_themes->setCurrentText(settings_->value("editorHighTheme", "one-dark").toString());
+    connect(ui->cbox_themes, &QComboBox::currentTextChanged, [this](QString const& value) {
+        settings_->setValue("editorHighTheme", value);
+    });
 
     {
         auto langs     = tesseract_->GetAvailableLangs();
@@ -84,12 +89,13 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
     connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
-        emit signalPixmapReady(pix);
         showNormal();
         activateWindow();
+        emit signalPixmapReady(pix);
     });
 
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
+        emit signalPlaintxtReady("获取 OCR 结果中......");
         ui->lbl_img->setPixmap(pixmap);
         ui->btn_float->setEnabled(true);
         ui->btn_save->setEnabled(true);
@@ -101,7 +107,22 @@ MainWindow::MainWindow(QWidget* parent)
             spdlog::error("保存图片到缓冲区失败");
             return;
         }
-        auto res = tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
+
+        auto fut = std::async(std::launch::async, [this, &buffer]() {
+            return tesseract_->ImageFromMem(buffer.buffer().constData(), buffer.size());
+        });
+
+        std::shared_ptr<char> res;
+        while(true) {
+            auto r = fut.wait_for(std::chrono::milliseconds(40));    /// 1000/40 = 25 fps
+            if(r == std::future_status::timeout) {
+                qApp->processEvents();
+                continue;
+            }
+
+            res = fut.get();
+            break;
+        }
 
         auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
         if(high_->IsAvailable()) {
@@ -229,7 +250,9 @@ void MainWindow::InitSettingPage() {
         kvantum_->unpolish(qApp);
         kvantum_->setTheme(conf_file, svg_file, color_file);
         qApp->setPalette(kvantum_->standardPalette());
+        settings_->setValue("kvantumTheme", value);
     });
+    ui->cbox_style->setCurrentText(settings_->value("kvantumTheme", "KvYaru").toString());
 #else
     // clang-format off
     static std::map<std::string, const char*> classMap {
@@ -254,33 +277,37 @@ void MainWindow::InitSettingPage() {
     });
 #endif
 
-    QFont f = qApp->font();
-    ui->cbox_fontFamily->setCurrentText(f.family());
-    ui->cbox_editor_fontFamily->setCurrentFont(f.family());
-    ui->spain_fontSize->setValue(f.pointSize());
-    ui->spain_editor_fontSize->setValue(f.pointSize());
-
     connect(ui->cbox_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily) {
         QFont f = qApp->font();
         f.setFamily(fontFamily);
         qApp->setFont(f);
+        settings_->setValue("fontFamily", f.family());
     });
 
     connect(ui->spain_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize) {
         QFont f = qApp->font();
         f.setPointSize(fontSize);
         qApp->setFont(f);
+        settings_->setValue("fontSize", f.pointSize());
     });
 
     connect(ui->cbox_editor_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily) {
         QFont f = ui->browser_txt->font();
         f.setFamily(fontFamily);
         ui->browser_txt->setFont(f);
+        settings_->setValue("editorFontFamily", f.family());
     });
 
     connect(ui->spain_editor_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize) {
         QFont f = ui->browser_txt->font();
         f.setPointSize(fontSize);
         ui->browser_txt->setFont(f);
+        settings_->setValue("editorFontSize", f.pointSize());
     });
+
+    QFont f = qApp->font();
+    ui->cbox_fontFamily->setCurrentText(settings_->value("fontFamily", f.family()).toString());
+    ui->cbox_editor_fontFamily->setCurrentFont(settings_->value("editorFontFamily", f.family()).toString());
+    ui->spain_fontSize->setValue(settings_->value("fontSize", f.pointSize()).toInt());
+    ui->spain_editor_fontSize->setValue(settings_->value("editorFontSize", f.pointSize()).toInt());
 }

@@ -10,6 +10,7 @@ class OcrTesseract;
 class CodeHighLightCode;
 class ScreenCapture;
 class QHotkey;
+class QSettings;
 
 namespace Kvantum {
 class Style;
@@ -36,6 +37,7 @@ signals:
 
 private:
     Ui::MainWindow*    ui;
+    QSettings*         settings_;
     ScreenCapture*     capture_;
     OcrTesseract*      tesseract_;
     QHotkey*           hotkey_;

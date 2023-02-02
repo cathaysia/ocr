@@ -21,8 +21,8 @@
 #include <QFileDialog>
 #include <QKeySequence>
 #include <QLabel>
-#include <QSpinBox>
 #include <QLineEdit>
+#include <QSpinBox>
 #include <QStyle>
 #include <QStyleFactory>
 
@@ -109,7 +109,6 @@ MainWindow::MainWindow(QWidget* parent)
         } else {
             emit signalPlaintxtReady(html.c_str());
         }
-
     });
 
     connect(ui->btn_float, &QPushButton::clicked, [this]() {
@@ -255,19 +254,33 @@ void MainWindow::InitSettingPage() {
     });
 #endif
 
-    QFont f= qApp->font();
+    QFont f = qApp->font();
     ui->cbox_fontFamily->setCurrentText(f.family());
+    ui->cbox_editor_fontFamily->setCurrentFont(f.family());
     ui->spain_fontSize->setValue(f.pointSize());
+    ui->spain_editor_fontSize->setValue(f.pointSize());
 
-    connect(ui->cbox_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily){
-       QFont f = qApp->font();
-       f.setFamily(fontFamily);
-       qApp->setFont(f);
+    connect(ui->cbox_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily) {
+        QFont f = qApp->font();
+        f.setFamily(fontFamily);
+        qApp->setFont(f);
     });
 
-    connect(ui->spain_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize){
-        QFont f= qApp->font();
+    connect(ui->spain_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize) {
+        QFont f = qApp->font();
         f.setPointSize(fontSize);
         qApp->setFont(f);
+    });
+
+    connect(ui->cbox_editor_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily) {
+        QFont f = ui->browser_txt->font();
+        f.setFamily(fontFamily);
+        ui->browser_txt->setFont(f);
+    });
+
+    connect(ui->spain_editor_fontSize, QOverload<int>::of(&QSpinBox::valueChanged), [this](int fontSize) {
+        QFont f = ui->browser_txt->font();
+        f.setPointSize(fontSize);
+        ui->browser_txt->setFont(f);
     });
 }

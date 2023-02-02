@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tab_widget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_home">
        <attribute name="title">
@@ -164,22 +164,36 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>字体</string>
+           <string>界面字体</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QFontComboBox" name="cbox_fontFamily"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QFontComboBox" name="cbox_fontFamily"/>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spain_fontSize"/>
+          </item>
+         </layout>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>字号</string>
+           <string>编辑器字体</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QSpinBox" name="spain_fontSize"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QFontComboBox" name="cbox_editor_fontFamily"/>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spain_editor_fontSize"/>
+          </item>
+         </layout>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_2">

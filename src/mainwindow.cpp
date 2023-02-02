@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     {
+        connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotReloadLangs);
+
         auto langs     = tesseract_->GetAvailableLangs();
         auto usedLangs = tesseract_->GetUsedLangs();
 
@@ -76,8 +78,8 @@ MainWindow::MainWindow(QWidget* parent)
             qlangs << s.c_str();
         }
 
-        ui->line_lang->setText(fmt::format("{}", fmt::join(usedLangs, ", ")).c_str());
-
+        auto s = fmt::format("{}", fmt::join(usedLangs, ", "));
+        ui->line_lang->setText(settings_->value("tesseractLangs", s.c_str()).toString());
         ui->line_lang->SetCmpList(qlangs);
     }
 
@@ -85,7 +87,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(this, &MainWindow::signalHtmlReady, ui->browser_txt, &QTextBrowser::setHtml);
     connect(this, &MainWindow::signalPlaintxtReady, ui->browser_txt, &QTextBrowser::setPlainText);
-    connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotReloadLangs);
     connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
     connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
@@ -165,6 +166,11 @@ MainWindow::MainWindow(QWidget* parent)
         signalPixmapReady(pixmap);
     });
 
+    ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
+    connect(ui->cbox_hidden, &QCheckBox::clicked, [this](bool checked) {
+        settings_->setValue("hiddenWhenTakeScreenshot", checked);
+    });
+
     InitSettingPage();
 }
 
@@ -223,6 +229,7 @@ void MainWindow::slotReloadLangs(QString const& text) {
     if(tesseract_->GetUsedLangs() == res) return;
 
     tesseract_->LoadLangs(res);
+    settings_->setValue("tesseractLangs", fmt::format("{}", fmt::join(res, ", ")).c_str());
 }
 
 void MainWindow::InitSettingPage() {

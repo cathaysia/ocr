@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "code_highlight.h"
+#include "eventobj/focus.h"
 #include "eventobj/mouse_clicked.h"
 #include "tesseract/ocr_tesseract.h"
 #include "ui/float_label.h"
@@ -69,16 +70,11 @@ MainWindow::MainWindow(QWidget* parent)
     ui->lbl_img->installEventFilter(this);
     ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
 
-    auto ce = new EventObj::MouseClicked(this);
-    ui->browser_txt->viewport()->installEventFilter(ce);
-    connect(ce, &EventObj::MouseClicked::clicked, [this]() {
-        ui->browser_txt->selectAll();
-    });
-
     InitCodeHighLightWidget();
     InitTesseractLangsWidget();
     InitBasicFunctionButton();
     InitSettingPage();
+    InitTextBrowser();
 
     connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
     connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
@@ -349,11 +345,15 @@ void MainWindow::InitBasicFunctionButton() {
     });
 
     auto ev = new EventObj::MouseClicked(ui->lbl_img);
-    connect(ev, &EventObj::MouseClicked::clicked, [this]() {
+    ui->lbl_img->installEventFilter(ev);
+    connect(ev, &EventObj::MouseClicked::signalClicked, [this]() {
         auto    pix_path = QFileDialog::getOpenFileName();
         QPixmap pix { pix_path };
         if(pix.isNull()) return;
 
         emit signalPixmapReady(pix);
     });
+};
+void MainWindow::InitTextBrowser() {
+    // TODO: 获取焦点时选中所有文本
 };

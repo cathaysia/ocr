@@ -27,6 +27,7 @@ public:
     void slotReloadLangs(QString const& text);
 
 private:
+    void InitTextBrowser();
     void InitSettingPage();
     void InitCodeHighLightWidget();
     void InitTesseractLangsWidget();

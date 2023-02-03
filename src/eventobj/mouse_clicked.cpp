@@ -32,13 +32,28 @@ bool MouseClicked::eventFilter(QObject* obj, QEvent* e) {
 
                     if(timer_->isActive()) {
                         timer_->stop();
-                        emit clicked();
+                        emit signalClicked();
                     }
                     break;
                 }
             default: break;
         }
     } while(0);
+
+    return false;
+}
+MouseDblClick::MouseDblClick(QObject* parent, Qt::MouseButton button) : QObject(parent), button_(button) { }
+
+bool MouseDblClick::eventFilter(QObject* obj, QEvent* e) {
+    do {
+        if(e->type() == QEvent::MouseButtonDblClick) {
+            auto ev = static_cast<QMouseEvent*>(e);
+            if(ev->button() == button_) {
+                emit signalDblClicked();
+            }
+        }
+    } while(0);
+
     return false;
 }
 }    // namespace EventObj

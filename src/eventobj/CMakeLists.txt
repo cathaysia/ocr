@@ -1,4 +1,4 @@
-add_library(${PROJECT_NAME}_eventobj STATIC mouse_clicked.cpp mouse_clicked.h)
+add_library(${PROJECT_NAME}_eventobj STATIC mouse_clicked.cpp mouse_clicked.h focus.h focus.cpp)
 add_library(${PROJECT_NAME}::eventobj ALIAS ${PROJECT_NAME}_eventobj)
 
 find_package(

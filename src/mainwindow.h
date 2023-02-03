@@ -23,8 +23,6 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-    bool eventFilter(QObject* obj, QEvent* e) override;
-
     void slotCaptureScreen();
     void slotReloadLangs(QString const& text);
 

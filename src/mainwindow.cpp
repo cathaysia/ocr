@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "code_highlight.h"
+#include "eventobj/mouse_clicked.h"
 #include "tesseract/ocr_tesseract.h"
 #include "ui/float_label.h"
 
@@ -67,7 +68,12 @@ MainWindow::MainWindow(QWidget* parent)
     ui->btn_copy->setDisabled(true);
     ui->lbl_img->installEventFilter(this);
     ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
-    ui->browser_txt->viewport()->installEventFilter(this);
+
+    auto ce = new EventObj::MouseClicked(this);
+    ui->browser_txt->viewport()->installEventFilter(ce);
+    connect(ce, &EventObj::MouseClicked::clicked, [this]() {
+        ui->browser_txt->selectAll();
+    });
 
     InitCodeHighLightWidget();
     InitTesseractLangsWidget();
@@ -156,37 +162,6 @@ MainWindow::~MainWindow() {
 #endif
 }
 
-bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
-    if(obj == ui->lbl_img) {
-        if(e->type() != QEvent::MouseButtonPress) {
-            return false;
-        }
-        auto me = static_cast<QMouseEvent*>(e);
-        if(me->button() != Qt::LeftButton) return false;
-
-        auto    pix_path = QFileDialog::getOpenFileName();
-        QPixmap pix { pix_path };
-        if(pix.isNull()) return false;
-
-        emit signalPixmapReady(pix);
-
-        return true;
-    }
-
-    if(obj == ui->browser_txt->viewport()) {
-        if(e->type() != QEvent::MouseButtonPress) {
-            return false;
-        }
-        auto me = static_cast<QMouseEvent*>(e);
-        if(me->button() != Qt::LeftButton) return false;
-
-        ui->browser_txt->selectAll();
-
-        return true;
-    }
-
-    return QWidget::eventFilter(obj, e);
-}
 void MainWindow::slotCaptureScreen() {
     if(!ui->cbox_hidden->isChecked()) {
         capture_->capture();
@@ -371,5 +346,14 @@ void MainWindow::InitBasicFunctionButton() {
 
         if(pixmap.isNull()) return;
         signalPixmapReady(pixmap);
+    });
+
+    auto ev = new EventObj::MouseClicked(ui->lbl_img);
+    connect(ev, &EventObj::MouseClicked::clicked, [this]() {
+        auto    pix_path = QFileDialog::getOpenFileName();
+        QPixmap pix { pix_path };
+        if(pix.isNull()) return;
+
+        emit signalPixmapReady(pix);
     });
 };

@@ -5,6 +5,7 @@ set(CMAKE_AUTORCC ON)
 add_subdirectory(common)
 add_subdirectory(ui)
 add_subdirectory(tesseract)
+add_subdirectory(eventobj)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(${PROJECT_NAME}_SRC
@@ -51,6 +52,7 @@ target_link_libraries(
             ${PROJECT_NAME}::common
             ${PROJECT_NAME}::ui
             ${PROJECT_NAME}::tesseract
+            ${PROJECT_NAME}::eventobj
 )
 
 if(WIN32)

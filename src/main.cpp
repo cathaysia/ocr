@@ -14,6 +14,8 @@ void SetEnvIfNotExists(const char* name, QString const& val) {
 }
 
 int main(int argc, char* argv[]) {
+    spdlog::set_level(spdlog::level::trace);
+
     QApplication app(argc, argv);
     auto         cur       = QApplication::applicationDirPath();
     auto         data_path = cur + "/tessdata";

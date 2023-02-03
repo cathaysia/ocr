@@ -22,6 +22,7 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QList>
 #include <QSettings>
 #include <QSpinBox>
 #include <QStyle>
@@ -35,6 +36,12 @@
 
 #include "screen_capture.h"
 
+#define DELETE_PTR(ptr) \
+    if(!ptr) {          \
+        delete ptr;     \
+        ptr = nullptr;  \
+    }
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -42,8 +49,11 @@ MainWindow::MainWindow(QWidget* parent)
     , capture_(new ScreenCapture(nullptr))
     , tesseract_(new OcrTesseract())
     , hotkey_(new QHotkey(QKeySequence(settings_->value("keyShortcut", "F10").toString()), true, qApp))
-    , high_(new CodeHighLightCode)
-    , kvantum_(nullptr) {
+    , highlight_(new CodeHighLightCode)
+#ifdef _WIN32
+    , kvantum_(nullptr)
+#endif
+{
     ui->setupUi(this);
     if(!hotkey_->isRegistered()) {
         spdlog::error("快捷键注册失败");
@@ -52,49 +62,24 @@ MainWindow::MainWindow(QWidget* parent)
     ui->btn_float->setDisabled(true);
     ui->btn_save->setDisabled(true);
     ui->btn_copy->setDisabled(true);
-
-    auto r = high_->GetAvailableThemes();
-    std::for_each(r.begin(), r.end(), [this](std::string const& item) {
-        ui->cbox_themes->addItem(item.c_str());
-    });
-    if(r.size() == 0) {
-        ui->lbl_themes->setMaximumSize(0, 0);
-        ui->cbox_themes->setMaximumSize(0, 0);
-    }
-
-    ui->cbox_themes->setCurrentText(settings_->value("editorHighTheme", "one-dark").toString());
-    connect(ui->cbox_themes, &QComboBox::currentTextChanged, [this](QString const& value) {
-        settings_->setValue("editorHighTheme", value);
-    });
-
-    {
-        connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotReloadLangs);
-
-        auto langs     = tesseract_->GetAvailableLangs();
-        auto usedLangs = tesseract_->GetUsedLangs();
-
-        QStringList qlangs;
-        for(auto const& s: langs) {
-            qlangs << s.c_str();
-        }
-
-        auto s = fmt::format("{}", fmt::join(usedLangs, ", "));
-        ui->line_lang->setText(settings_->value("tesseractLangs", s.c_str()).toString());
-        ui->line_lang->SetCmpList(qlangs);
-    }
-
     ui->lbl_img->installEventFilter(this);
+    ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
 
-    connect(this, &MainWindow::signalHtmlReady, ui->browser_txt, &QTextBrowser::setHtml);
-    connect(this, &MainWindow::signalPlaintxtReady, ui->browser_txt, &QTextBrowser::setPlainText);
-    connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
+    InitCodeHighLightWidget();
+    InitTesseractLangsWidget();
+    InitBasicFunctionButton();
+    InitSettingPage();
+
     connect(hotkey_, &QHotkey::activated, this, &MainWindow::slotCaptureScreen);
+    connect(ui->btn_capture, &QPushButton::clicked, this, &MainWindow::slotCaptureScreen);
     connect(capture_, &ScreenCapture::signalScreenReady, [this](QPixmap const& pix) {
         showNormal();
         activateWindow();
         emit signalPixmapReady(pix);
     });
 
+    connect(this, &MainWindow::signalHtmlReady, ui->browser_txt, &QTextBrowser::setHtml);
+    connect(this, &MainWindow::signalPlaintxtReady, ui->browser_txt, &QTextBrowser::setPlainText);
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         emit signalPlaintxtReady("获取 OCR 结果中......");
         ui->lbl_img->setPixmap(pixmap);
@@ -125,63 +110,25 @@ MainWindow::MainWindow(QWidget* parent)
             break;
         }
 
-        auto html = high_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
-        if(high_->IsAvailable()) {
+        auto html = highlight_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
+        if(highlight_->IsAvailable()) {
             emit signalHtmlReady(html.c_str());
         } else {
             emit signalPlaintxtReady(html.c_str());
         }
     });
-
-    connect(ui->btn_float, &QPushButton::clicked, [this]() {
-        auto const& img = ui->lbl_img->pixmap(Qt::ReturnByValue);
-
-        auto b = new FloatLabel;
-        b->SetPixmap(img);
-        b->show();
-    });
-
-    connect(ui->btn_save, &QPushButton::clicked, [this]() {
-        auto file_name = QFileDialog::getSaveFileName();
-        if(file_name.isEmpty()) return;
-
-        ui->lbl_img->pixmap(Qt::ReturnByValue).save(file_name);
-    });
-
-    connect(ui->btn_copy, &QPushButton::clicked, [this]() {
-        auto const& b = QApplication::clipboard();
-        b->setPixmap(ui->lbl_img->pixmap(Qt::ReturnByValue), QClipboard::Clipboard);
-    });
-    connect(ui->btn_paste, &QPushButton::clicked, [this]() {
-        auto const& b      = QApplication::clipboard();
-        auto        pixmap = b->pixmap();
-        spdlog::info("读取图片 {}", pixmap.isNull());
-        if(pixmap.isNull()) {
-            auto file_name = b->text();
-            pixmap.load(file_name);
-        }
-        spdlog::info("读取图片2 {}", pixmap.isNull());
-
-        if(pixmap.isNull()) return;
-        signalPixmapReady(pixmap);
-    });
-
-    ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
-    connect(ui->cbox_hidden, &QCheckBox::clicked, [this](bool checked) {
-        settings_->setValue("hiddenWhenTakeScreenshot", checked);
-    });
-
-    InitSettingPage();
 }
 
 MainWindow::~MainWindow() {
-    delete ui;
-    delete capture_;
-    delete tesseract_;
+    DELETE_PTR(settings_);
+    DELETE_PTR(capture_);
+    DELETE_PTR(tesseract_);
+    DELETE_PTR(hotkey_);
+    DELETE_PTR(highlight_);
 
-    ui         = nullptr;
-    tesseract_ = nullptr;
-    capture_   = nullptr;
+#ifdef _WIN32
+    DELETE_PTR(kvantum_);
+#endif
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
@@ -318,3 +265,73 @@ void MainWindow::InitSettingPage() {
     ui->spain_fontSize->setValue(settings_->value("fontSize", f.pointSize()).toInt());
     ui->spain_editor_fontSize->setValue(settings_->value("editorFontSize", f.pointSize()).toInt());
 }
+
+void MainWindow::InitCodeHighLightWidget() {
+    auto r = highlight_->GetAvailableThemes();
+    if(r.empty()) {
+        ui->lbl_themes->setMaximumSize(0, 0);
+        ui->cbox_themes->setMaximumSize(0, 0);
+        return;
+    }
+    for(auto const& item: r) {
+        ui->cbox_themes->addItem(item.c_str());
+    }
+
+    ui->cbox_themes->setCurrentText(settings_->value("editorHighTheme", "one-dark").toString());
+    connect(ui->cbox_themes, &QComboBox::currentTextChanged, [this](QString const& value) {
+        settings_->setValue("editorHighTheme", value);
+    });
+}
+
+void MainWindow::InitTesseractLangsWidget() {
+    connect(ui->line_lang, &QLineEdit::textChanged, this, &MainWindow::slotReloadLangs);
+
+    auto s = fmt::format("{}", fmt::join(tesseract_->GetUsedLangs(), ", "));
+    ui->line_lang->setText(settings_->value("tesseractLangs", s.c_str()).toString());
+
+    auto        langs = tesseract_->GetAvailableLangs();
+    QStringList qlangs;
+    qlangs.reserve(langs.size());
+    std::transform(langs.begin(), langs.end(), std::back_inserter(qlangs), [](const std::string& v) {
+        return QString::fromStdString(v);
+    });
+    ui->line_lang->SetCmpList(qlangs);
+};
+
+void MainWindow::InitBasicFunctionButton() {
+    connect(ui->btn_float, &QPushButton::clicked, [this]() {
+        auto const& img = ui->lbl_img->pixmap(Qt::ReturnByValue);
+
+        auto b = new FloatLabel;
+        b->SetPixmap(img);
+        b->show();
+    });
+    connect(ui->cbox_hidden, &QCheckBox::clicked, [this](bool checked) {
+        settings_->setValue("hiddenWhenTakeScreenshot", checked);
+    });
+
+    connect(ui->btn_save, &QPushButton::clicked, [this]() {
+        auto file_name = QFileDialog::getSaveFileName();
+        if(file_name.isEmpty()) return;
+
+        ui->lbl_img->pixmap(Qt::ReturnByValue).save(file_name);
+    });
+
+    connect(ui->btn_copy, &QPushButton::clicked, [this]() {
+        auto const& b = QApplication::clipboard();
+        b->setPixmap(ui->lbl_img->pixmap(Qt::ReturnByValue), QClipboard::Clipboard);
+    });
+    connect(ui->btn_paste, &QPushButton::clicked, [this]() {
+        auto const& b      = QApplication::clipboard();
+        auto        pixmap = b->pixmap();
+        spdlog::info("读取图片 {}", pixmap.isNull());
+        if(pixmap.isNull()) {
+            auto file_name = b->text();
+            pixmap.load(file_name);
+        }
+        spdlog::info("读取图片2 {}", pixmap.isNull());
+
+        if(pixmap.isNull()) return;
+        signalPixmapReady(pixmap);
+    });
+};

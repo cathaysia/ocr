@@ -30,6 +30,9 @@ public:
 
 private:
     void InitSettingPage();
+    void InitCodeHighLightWidget();
+    void InitTesseractLangsWidget();
+    void InitBasicFunctionButton();
 signals:
     void signalPixmapReady(QPixmap const& pixmap);
     void signalHtmlReady(QString const& html);
@@ -41,6 +44,8 @@ private:
     ScreenCapture*     capture_;
     OcrTesseract*      tesseract_;
     QHotkey*           hotkey_;
-    CodeHighLightCode* high_;
-    Kvantum::Style*    kvantum_;
+    CodeHighLightCode* highlight_;
+#ifdef _WIN32
+    Kvantum::Style* kvantum_;
+#endif
 };

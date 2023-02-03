@@ -230,27 +230,19 @@ void MainWindow::InitSettingPage() {
     });
     ui->cbox_style->setCurrentText(settings_->value("kvantumTheme", "KvYaru").toString());
 #else
-    // clang-format off
-    static std::map<std::string, const char*> classMap {
-        { "highcontrastinverse", "HighContrastInverse" },
-        { "highcontrast", "HighContrast" },
-        { "adwaita-highcontrastinverse", "Adwaita-HighContrastInverse" },
-        { "adwaita-highcontrast", "Adwaita-HighContrast" },
-        { "adwaita-dark", "Adwaita-Dark" },
-        { "adwaita", "Adwaita" },
-        { "windows", "Windows" },
-        { "fusion", "Fusion" }
-    };
-    // clang-format on
-
     auto styles = QStyleFactory::keys();
     ui->cbox_style->addItems(styles);
-    ui->cbox_style->setCurrentText(classMap[qApp->style()->objectName().toStdString()]);
     spdlog::info("当前 Style 为：{}", qApp->style()->objectName().toStdString());
 
     connect(ui->cbox_style, &QComboBox::currentTextChanged, [this](QString const& value) {
         qApp->setStyle(QStyleFactory::create(value));
+        settings_->setValue("Style", value);
     });
+
+    auto defaultStyle = settings_->value("Style").toString();
+    if(!defaultStyle.isEmpty()) {
+        ui->cbox_style->setCurrentText(defaultStyle);
+    }
 #endif
 
     connect(ui->cbox_fontFamily, &QFontComboBox::currentTextChanged, [this](QString const& fontFamily) {

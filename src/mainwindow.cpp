@@ -37,7 +37,7 @@
 #include "screen_capture.h"
 
 #define DELETE_PTR(ptr) \
-    if(!ptr) {          \
+    if(ptr) {           \
         delete ptr;     \
         ptr = nullptr;  \
     }
@@ -79,13 +79,23 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     connect(this, &MainWindow::signalHtmlReady, ui->browser_txt, &QTextBrowser::setHtml);
-    connect(this, &MainWindow::signalPlaintxtReady, ui->browser_txt, &QTextBrowser::setPlainText);
+    connect(this, &MainWindow::signalPlaintxtReady, [this](QString const& txt, bool requestHigh) {
+        if(!requestHigh) {
+            ui->browser_txt->setPlainText(txt);
+            return;
+        }
+
+        auto html = highlight_->ShaderCode(txt.toStdString(), ui->cbox_themes->currentText().toStdString());
+        signalHtmlReady(html.c_str());
+    });
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         emit signalPlaintxtReady("获取 OCR 结果中......");
+
         ui->lbl_img->setPixmap(pixmap);
         ui->btn_float->setEnabled(true);
         ui->btn_save->setEnabled(true);
         ui->btn_copy->setEnabled(true);
+
         QBuffer buffer;
         buffer.open(QIODevice::ReadWrite);
         auto ret = pixmap.save(&buffer, "PNG");
@@ -110,12 +120,7 @@ MainWindow::MainWindow(QWidget* parent)
             break;
         }
 
-        auto html = highlight_->ShaderCode(res.get(), ui->cbox_themes->currentText().toStdString());
-        if(highlight_->IsAvailable()) {
-            emit signalHtmlReady(html.c_str());
-        } else {
-            emit signalPlaintxtReady(html.c_str());
-        }
+        emit signalPlaintxtReady(res.get(), highlight_->IsAvailable());
     });
 }
 
@@ -280,6 +285,7 @@ void MainWindow::InitCodeHighLightWidget() {
     ui->cbox_themes->setCurrentText(settings_->value("editorHighTheme", "one-dark").toString());
     connect(ui->cbox_themes, &QComboBox::currentTextChanged, [this](QString const& value) {
         settings_->setValue("editorHighTheme", value);
+        emit signalPlaintxtReady(ui->browser_txt->toPlainText(), highlight_->IsAvailable());
     });
 }
 

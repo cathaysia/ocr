@@ -36,7 +36,7 @@ private:
 signals:
     void signalPixmapReady(QPixmap const& pixmap);
     void signalHtmlReady(QString const& html);
-    void signalPlaintxtReady(QString const& txt);
+    void signalPlaintxtReady(QString const& txt, bool requestHigh = false);
 
 private:
     Ui::MainWindow*    ui;

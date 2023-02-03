@@ -9,6 +9,7 @@
 #include <future>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <thread>
 
 #include <fmt/format.h>
@@ -86,8 +87,24 @@ MainWindow::MainWindow(QWidget* parent)
         }
 
         auto html = highlight_->ShaderCode(txt.toStdString(), ui->cbox_themes->currentText().toStdString());
+
+        do {    // 查找背景色
+            auto p = html.begin() + html.find("background") + 12;
+            if(p + 7 > html.end()) {
+                break;
+            }
+
+            emit signalChangeBackgroundColor({ p, p + 7 });
+        } while(0);
+
         signalHtmlReady(html.c_str());
     });
+
+    connect(this, &MainWindow::signalChangeBackgroundColor, [this](std::string const& color) {
+        spdlog::trace("设置 TxtBrowser 背景色为：'{}'", color);
+        ui->browser_txt->setStyleSheet(fmt::format("background-color: {};", color).c_str());
+    });
+
     connect(this, &MainWindow::signalPixmapReady, [this](QPixmap const& pixmap) {
         emit signalPlaintxtReady("获取 OCR 结果中......");
 

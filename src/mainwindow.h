@@ -37,6 +37,7 @@ signals:
     void signalPixmapReady(QPixmap const& pixmap);
     void signalHtmlReady(QString const& html);
     void signalPlaintxtReady(QString const& txt, bool requestHigh = false);
+    void signalChangeBackgroundColor(std::string const& color);
 
 private:
     Ui::MainWindow*    ui;

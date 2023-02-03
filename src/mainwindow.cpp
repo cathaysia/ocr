@@ -24,10 +24,12 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QList>
+#include <QMouseEvent>
 #include <QSettings>
 #include <QSpinBox>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QTimer>
 
 #include <QHotkey>
 
@@ -65,6 +67,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->btn_copy->setDisabled(true);
     ui->lbl_img->installEventFilter(this);
     ui->cbox_hidden->setChecked(settings_->value("hiddenWhenTakeScreenshot", false).toBool());
+    ui->browser_txt->viewport()->installEventFilter(this);
 
     InitCodeHighLightWidget();
     InitTesseractLangsWidget();
@@ -154,15 +157,35 @@ MainWindow::~MainWindow() {
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* e) {
-    if(obj != ui->lbl_img || e->type() != QEvent::MouseButtonPress) return false;
+    if(obj == ui->lbl_img) {
+        if(e->type() != QEvent::MouseButtonPress) {
+            return false;
+        }
+        auto me = static_cast<QMouseEvent*>(e);
+        if(me->button() != Qt::LeftButton) return false;
 
-    auto    pix_path = QFileDialog::getOpenFileName();
-    QPixmap pix { pix_path };
-    if(pix.isNull()) return false;
+        auto    pix_path = QFileDialog::getOpenFileName();
+        QPixmap pix { pix_path };
+        if(pix.isNull()) return false;
 
-    emit signalPixmapReady(pix);
+        emit signalPixmapReady(pix);
 
-    return true;
+        return true;
+    }
+
+    if(obj == ui->browser_txt->viewport()) {
+        if(e->type() != QEvent::MouseButtonPress) {
+            return false;
+        }
+        auto me = static_cast<QMouseEvent*>(e);
+        if(me->button() != Qt::LeftButton) return false;
+
+        ui->browser_txt->selectAll();
+
+        return true;
+    }
+
+    return QWidget::eventFilter(obj, e);
 }
 void MainWindow::slotCaptureScreen() {
     if(!ui->cbox_hidden->isChecked()) {

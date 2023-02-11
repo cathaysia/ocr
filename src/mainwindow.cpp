@@ -150,6 +150,8 @@ MainWindow::~MainWindow() {
     DELETE_PTR(settings_);
     DELETE_PTR(capture_);
     DELETE_PTR(tesseract_);
+
+    hotkey_->resetShortcut();
     DELETE_PTR(hotkey_);
     DELETE_PTR(highlight_);
 

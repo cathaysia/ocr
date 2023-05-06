@@ -16,6 +16,3 @@
 [submodule "extern/tesseract"]
 	path = extern/tesseract
 	url = https://github.com/tesseract-ocr/tesseract
-[submodule "extern/kvantum-on-windows"]
-	path = extern/kvantum-on-windows
-	url = https://github.com/cathaysia/kvantum-on-windows.git

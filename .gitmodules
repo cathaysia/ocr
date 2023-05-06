@@ -1,18 +1,9 @@
-[submodule "extern/spdlog"]
-	path = extern/spdlog
-	url = https://github.com/gabime/spdlog
-[submodule "extern/fmt"]
-	path = extern/fmt
-	url = https://github.com/fmtlib/fmt
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = https://github.com/google/googletest
 [submodule "extern/QHotkey"]
 	path = extern/QHotkey
 	url = https://github.com/Skycoder42/QHotkey
-[submodule "extern/leptonica"]
-	path = extern/leptonica
-	url = https://github.com/DanBloomberg/leptonica
-[submodule "extern/tesseract"]
-	path = extern/tesseract
-	url = https://github.com/tesseract-ocr/tesseract
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/microsoft/vcpkg.git

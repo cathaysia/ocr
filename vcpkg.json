@@ -1,0 +1,11 @@
+{
+    "name": "dragon-ocr",
+    "version": "1.0.0",
+    "dependencies": [
+        "pybind11",
+        "fmt",
+        "spdlog",
+        "tesseract",
+        "gtest"
+    ]
+}

@@ -1,4 +1,14 @@
 cmake_minimum_required(VERSION 3.18)
+
+set(ENV{VCPKG_DOWNLOADS} "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(ENV{X_VCPKG_ASSET_SOURCES} "clear;x-azurl,file://${CMAKE_CURRENT_SOURCE_DIR}/assets,,readwrite;")
+set(ENV{VCPKG_OVERLAY_PORTS} "${CMAKE_CURRENT_SOURCE_DIR}/overlays")
+set(ENV{VCPKG_FORCE_SYSTEM_BINARIES} 1)
+set(CMAKE_TOOLCHAIN_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    CACHE PATH "vcpkg toolchain file path"
+)
+
 project(dragon_screen)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -36,10 +46,14 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wl,-rpath CXX_Support_rpath)
 if(${CXX_Support_rpath})
-    add_link_options(-Wl,-rpath=./:./lib)
+    # add_link_options(-Wl,-rpath=./:./lib)
 endif()
 
 include(FeatureSummary)
+
+find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(Tesseract CONFIG REQUIRED)
 
 add_subdirectory(extern)
 add_subdirectory(src)

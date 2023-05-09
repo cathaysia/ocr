@@ -46,7 +46,7 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-Wl,-rpath CXX_Support_rpath)
 if(${CXX_Support_rpath})
-    # add_link_options(-Wl,-rpath=./:./lib)
+    add_link_options(-Wl,-rpath,./:./lib)
 endif()
 
 include(FeatureSummary)
